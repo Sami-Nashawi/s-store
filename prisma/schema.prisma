@@ -1,0 +1,63 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  role      Role     @default(WORKER)
+  createdAt DateTime @default(now())
+  actions   Action[]
+  events    Event[]  // events created by user
+}
+
+enum Role {
+  MANAGER
+  WORKER
+}
+
+model Action {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  type      String
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+model Material {
+  id          String   @id @default(cuid())
+  sku         String   @unique
+  description String
+  photoUrl    String?
+  totalQty    Int      @default(0)
+  lastUpdate  DateTime @updatedAt
+  events      Event[]
+  quantity  Int @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Event {
+  id         String   @id @default(cuid())
+  type       EventType
+  qty        Int
+  note       String?
+  user       User?    @relation(fields: [userId], references: [id])
+  userId     String?
+  material   Material @relation(fields: [materialId], references: [id])
+  materialId String
+  createdAt  DateTime @default(now())
+}
+
+enum EventType {
+  RECEIVE
+  WITHDRAW
+}
