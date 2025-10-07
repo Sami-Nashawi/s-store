@@ -7,8 +7,8 @@ export default function Sidebar() {
       <nav>
         <Link href="/">🏠 Dashboard</Link>
         <Link href="/add-material">➕ Add Material</Link>
-        <Link href="/receive">📥 Receive</Link>
-        <Link href="/withdraw">📤 Withdraw</Link>
+        <Link href="/update-material">🔄 Update Material</Link>
+        {/* <Link href="/withdraw"> Withdraw</Link> */}
         <Link href="/materials">📋 Materials</Link>
         <Link href="/users">👥 Users</Link>
       </nav>

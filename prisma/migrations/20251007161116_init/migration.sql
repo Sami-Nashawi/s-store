@@ -32,7 +32,7 @@ CREATE TABLE "Material" (
     "sku" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "photoUrl" TEXT,
-    "totalQty" INTEGER NOT NULL DEFAULT 0,
+    "quantity" INTEGER NOT NULL DEFAULT 0,
     "lastUpdate" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Material_pkey" PRIMARY KEY ("id")
@@ -42,9 +42,8 @@ CREATE TABLE "Material" (
 CREATE TABLE "Event" (
     "id" TEXT NOT NULL,
     "type" "EventType" NOT NULL,
-    "qty" INTEGER NOT NULL,
+    "quantity" INTEGER NOT NULL,
     "note" TEXT,
-    "userId" TEXT,
     "materialId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -59,9 +58,6 @@ CREATE UNIQUE INDEX "Material_sku_key" ON "Material"("sku");
 
 -- AddForeignKey
 ALTER TABLE "Action" ADD CONSTRAINT "Action_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Event" ADD CONSTRAINT "Event_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_materialId_fkey" FOREIGN KEY ("materialId") REFERENCES "Material"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

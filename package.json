@@ -11,6 +11,10 @@
     "prisma:migrate": "prisma migrate dev --name init"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.3.4",
+    "@mui/x-data-grid": "^8.13.1",
     "@prisma/client": "^6.16.3",
     "html5-qrcode": "^2.3.8",
     "next": "15.5.4",

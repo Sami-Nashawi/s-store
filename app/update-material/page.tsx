@@ -5,7 +5,7 @@ import { useState } from "react";
 export default function UpdateMaterialPage() {
   const [materialId, setMaterialId] = useState("");
   const [type, setType] = useState("RECEIVE");
-  const [qty, setQty] = useState(0);
+  const [quantity, setQuantity] = useState(0);
   const [message, setMessage] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -19,12 +19,12 @@ export default function UpdateMaterialPage() {
         // in production replace this with auth (not header)
         "x-user-id": "manager-user-id", 
       },
-      body: JSON.stringify({ materialId, type, qty: Number(qty) }),
+      body: JSON.stringify({ materialId, type, quantity: Number(quantity) }),
     });
 
     const data = await res.json();
     if (res.ok) {
-      setMessage(`✅ ${type} OK → New Qty: ${data.material.totalQty}`);
+      setMessage(`✅ ${type} OK → New Quantity: ${data.material.quantity}`);
     } else {
       setMessage(`❌ Error: ${data.error}`);
     }
@@ -53,8 +53,8 @@ export default function UpdateMaterialPage() {
           type="number"
           className="border p-2"
           placeholder="Quantity"
-          value={qty}
-          onChange={(e) => setQty(Number(e.target.value))}
+          value={quantity}
+          onChange={(e) => setQuantity(Number(e.target.value))}
         />
         <button className="bg-green-600 text-white px-4 py-2">
           Save

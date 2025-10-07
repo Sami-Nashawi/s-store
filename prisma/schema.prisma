@@ -16,7 +16,7 @@ model User {
   role      Role     @default(WORKER)
   createdAt DateTime @default(now())
   actions   Action[]
-  events    Event[]  // events created by user
+  // events    Event[]  // events created by user
 }
 
 enum Role {
@@ -34,24 +34,22 @@ model Action {
 }
 
 model Material {
-  id          String   @id @default(cuid())
+ id          String   @id @default(cuid())
   sku         String   @unique
   description String
   photoUrl    String?
-  totalQty    Int      @default(0)
+  quantity    Int      @default(0)
   lastUpdate  DateTime @updatedAt
   events      Event[]
-  quantity  Int @default(0)
-  createdAt DateTime @default(now())
 }
 
 model Event {
   id         String   @id @default(cuid())
   type       EventType
-  qty        Int
+ quantity        Int
   note       String?
-  user       User?    @relation(fields: [userId], references: [id])
-  userId     String?
+  // user       User?    @relation(fields: [userId], references: [id])
+  // userId     String?
   material   Material @relation(fields: [materialId], references: [id])
   materialId String
   createdAt  DateTime @default(now())

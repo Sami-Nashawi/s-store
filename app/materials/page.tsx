@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { Box, Typography } from "@mui/material";
 
 type Material = {
   id: string;
   description: string;
-  totalQty: number;
+  quantity: number;
   lastUpdate: string;
 };
 
@@ -22,31 +24,35 @@ export default function MaterialsPage() {
     load();
   }, []);
 
-  if (loading) return <p className="p-4">Loading...</p>;
+  const columns: GridColDef[] = [
+    { field: "description", headerName: "Name", flex: 1 },
+    { field: "quantity", headerName: "Quantity", width: 130 },
+    {
+      field: "lastUpdate",
+      headerName: "Last Update",
+      flex: 1,
+      valueFormatter: (params) =>
+        new Date(params).toLocaleString(),
+    },
+  ];
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">Materials</h1>
-      <table className="w-full border">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border p-2">Name</th>
-            <th className="border p-2">Qty</th>
-            <th className="border p-2">Last Update</th>
-          </tr>
-        </thead>
-        <tbody>
-          {materials.map((m) => (
-            <tr key={m.id}>
-              <td className="border p-2">{m.description}</td>
-              <td className="border p-2">{m.totalQty}</td>
-              <td className="border p-2">
-                {new Date(m.lastUpdate).toLocaleString()}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Box sx={{ p: 2 }}>
+      <Typography variant="h5" fontWeight="bold" mb={2}>
+        Materials
+      </Typography>
+      <div style={{ height: 500, width: "100%" }}>
+        <DataGrid
+          rows={materials}
+          columns={columns}
+          getRowId={(row) => row.id}
+          pageSizeOptions={[5, 10, 20]}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 5 } },
+          }}
+          loading={loading}
+        />
+      </div>
+    </Box>
   );
 }

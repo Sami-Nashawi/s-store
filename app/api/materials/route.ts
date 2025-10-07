@@ -6,7 +6,7 @@ import { z } from "zod";
 const CreateMaterialSchema = z.object({
   description: z.string().min(1),
   photoUrl: z.string().url().optional(),
-  initialQty: z.number().int().nonnegative().optional(),
+  quantity: z.number().int().nonnegative().optional(),
 });
 
 export async function GET() {
@@ -28,15 +28,15 @@ export async function POST(req: Request) {
           description: parsed.description,
           sku,
           photoUrl: parsed.photoUrl ?? null,
-          totalQty: parsed.initialQty ?? 0,
+          quantity: parsed.quantity ?? 0,
         },
       });
 
-      if (parsed.initialQty && parsed.initialQty > 0) {
+      if (parsed.quantity && parsed.quantity > 0) {
         await tx.event.create({
           data: {
             type: "RECEIVE",
-            qty: parsed.initialQty,
+           quantity: parsed.quantity,
             material: {
               connect: { id: material.id }
             },

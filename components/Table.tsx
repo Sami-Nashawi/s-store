@@ -1,7 +1,7 @@
 interface Row {
   id: string;
   name: string;
-  qty: number;
+ quantity: number;
   lastUpdate: string;
 }
 
@@ -21,7 +21,7 @@ export default function Table({ data }: { data: Row[] }) {
           <tr key={row.id}>
             <td>{row.id}</td>
             <td>{row.name}</td>
-            <td>{row.qty}</td>
+            <td>{row.quantity}</td>
             <td>{row.lastUpdate}</td>
           </tr>
         ))}
