@@ -35,11 +35,11 @@ model Action {
 
 model Material {
  id          String   @id @default(cuid())
-  sku         String   @unique
   description String
   photoUrl    String?
   quantity    Int      @default(0)
   lastUpdate  DateTime @updatedAt
+  unit       String
   events      Event[]
 }
 

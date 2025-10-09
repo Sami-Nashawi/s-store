@@ -4,6 +4,7 @@ import { prisma } from "../../../lib/prisma";
 import { z } from "zod";
 
 const CreateMaterialSchema = z.object({
+  unit: z.string().min(1),
   description: z.string().min(1),
   photoUrl: z.string().url().optional(),
   quantity: z.number().int().nonnegative().optional(),
@@ -19,16 +20,15 @@ export async function POST(req: Request) {
     const body = await req.json();
     const parsed = CreateMaterialSchema.parse(body);
 
-    const sku = "MAT-" + Math.random().toString(36).slice(2, 8).toUpperCase();
 
     // Create material, and if initialQty > 0 create a RECEIVE event in a transaction
     const result = await prisma.$transaction(async (tx) => {
       const material = await tx.material.create({
         data: {
           description: parsed.description,
-          sku,
           photoUrl: parsed.photoUrl ?? null,
           quantity: parsed.quantity ?? 0,
+          unit: parsed.unit,
         },
       });
 

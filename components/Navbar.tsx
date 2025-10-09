@@ -1,8 +1,16 @@
+import { AppBar, Toolbar, Typography } from "@mui/material";
+
 export default function Navbar() {
   return (
-    <header className="navbar">
-      <span>Site Store Management</span>
-      <span>User: Manager</span>
-    </header>
+    <AppBar
+      position="fixed"
+      sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, bgcolor: "primary.main" }}
+    >
+      <Toolbar>
+        <Typography variant="h6" noWrap>
+          🏗️ ERP System
+        </Typography>
+      </Toolbar>
+    </AppBar>
   );
 }

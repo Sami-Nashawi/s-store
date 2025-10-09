@@ -24,17 +24,18 @@ export default function MaterialsPage() {
     load();
   }, []);
 
-  const columns: GridColDef[] = [
-    { field: "description", headerName: "Name", flex: 1 },
-    { field: "quantity", headerName: "Quantity", width: 130 },
-    {
-      field: "lastUpdate",
-      headerName: "Last Update",
-      flex: 1,
-      valueFormatter: (params) =>
-        new Date(params).toLocaleString(),
-    },
-  ];
+ const columns: GridColDef[] = [
+  { field: "description", headerName: "Name", flex: 1 },
+  { field: "unit", headerName: "Unit", width: 120 },
+  { field: "quantity", headerName: "Quantity", width: 130 },
+  {
+    field: "lastUpdate",
+    headerName: "Last Update",
+    flex: 1,
+    valueFormatter: (params) =>
+      new Date(params).toLocaleString(),
+  },
+];
 
   return (
     <Box sx={{ p: 2 }}>
