@@ -8,7 +8,7 @@ export default function Navbar() {
     >
       <Toolbar>
         <Typography variant="h6" noWrap>
-          🏗️ ERP System
+          🏗️ S Store
         </Typography>
       </Toolbar>
     </AppBar>

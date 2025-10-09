@@ -43,7 +43,7 @@ export default function UpdateMaterialPage() {
   }
 
   return (
-    <Box sx={{ p: 4, maxWidth: 600, mx: "auto" }}>
+    <Box >
       <Typography variant="h5" fontWeight="bold" mb={3}>
         🔄 Update Material
       </Typography>
@@ -51,7 +51,7 @@ export default function UpdateMaterialPage() {
       <Paper sx={{ p: 3 }}>
         <form
           onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+          style={{ display: "flex", flexDirection: "row", gap: "1.5rem" ,flexWrap: "wrap"}}
         >
           <TextField
             label="Material ID (scan or enter)"

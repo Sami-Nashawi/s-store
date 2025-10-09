@@ -10,16 +10,28 @@ const CreateMaterialSchema = z.object({
   quantity: z.number().int().nonnegative().optional(),
 });
 
-export async function GET() {
-  const materials = await prisma.material.findMany({ orderBy: { lastUpdate: "desc" } });
-  return NextResponse.json(materials);
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const page = parseInt(searchParams.get("page") || "0", 10);
+  const pageSize = parseInt(searchParams.get("pageSize") || "20", 10);
+
+  // Count total rows
+  const total = await prisma.material.count();
+
+  // Fetch only requested page
+  const materials = await prisma.material.findMany({
+    skip: page * pageSize,
+    take: pageSize,
+    orderBy: { lastUpdate: "desc" },
+  });
+
+  return NextResponse.json({ rows: materials, total });
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const parsed = CreateMaterialSchema.parse(body);
-
 
     // Create material, and if initialQty > 0 create a RECEIVE event in a transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -36,9 +48,9 @@ export async function POST(req: Request) {
         await tx.event.create({
           data: {
             type: "RECEIVE",
-           quantity: parsed.quantity,
+            quantity: parsed.quantity,
             material: {
-              connect: { id: material.id }
+              connect: { id: material.id },
             },
           },
         });

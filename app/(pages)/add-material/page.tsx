@@ -14,29 +14,29 @@
 
   export default function AddMaterialPage() {
     const [description, setDescription] = useState("");
-    const [initialQuantity, setInitialQuantity] = useState(0);
+    const [quantity, setQuantity] = useState(0);
     const [unit, setUnit] = useState("pcs");
     const [loading, setLoading] = useState(false);
-    const [materialId, setMaterialId] = useState<string | null>(null);
+    const [data, setData] = useState<any>(null);
 
     async function handleSubmit(e: React.FormEvent) {
       e.preventDefault();
       setLoading(true);
-      setMaterialId(null);
+      setData(null);
 
       const res = await fetch("/api/materials", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           description,
-          quantity: Number(initialQuantity),
+          quantity: Number(quantity),
           unit,
         }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        setMaterialId(data.id);
+        setData(data);
       }
       setLoading(false);
     }
@@ -46,11 +46,12 @@
     }
 
     return (
+      <Box >
+         <Typography variant="h5" fontWeight="bold" mb={3}>
+        ➕ Add Material
+      </Typography>
       <Box
         sx={{
-          p: 3,
-          maxWidth: 500,
-          mx: "auto",
         }}
       >
         <style jsx global>{`
@@ -89,14 +90,12 @@
 
         <Card sx={{ boxShadow: 4, borderRadius: 3 }}>
           <CardContent>
-            <Typography variant="h5" fontWeight="bold" gutterBottom>
-              Add New Material
-            </Typography>
+           
 
             <Box
               component="form"
               onSubmit={handleSubmit}
-              sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+              sx={{ display: "flex", flexDirection: "row", gap: 2 }}
             >
               <TextField
                 label="Material Description"
@@ -108,12 +107,12 @@
               />
 
               <TextField
-                label="Initial Quantity"
+                label="Quantity"
                 type="number"
                 variant="outlined"
                 fullWidth
-                value={initialQuantity}
-                onChange={(e) => setInitialQuantity(Number(e.target.value))}
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
                 required
               />
 
@@ -145,12 +144,12 @@
           </CardContent>
         </Card>
 
-        {materialId && (
+        {data && (
           <Box textAlign="center" mt={4}>
             <div id="printableQR">
-              <QRCodeCanvas value={materialId} size={400} includeMargin={true} />
+              <QRCodeCanvas value={data.id} size={400} includeMargin={true} />
               <Typography variant="h6" sx={{ mt: 2 }}>
-                {description} ({unit})
+                {data.description} ({data.unit})
               </Typography>
             </div>
 
@@ -165,6 +164,7 @@
             </Button>
           </Box>
         )}
+      </Box>
       </Box>
     );
   }

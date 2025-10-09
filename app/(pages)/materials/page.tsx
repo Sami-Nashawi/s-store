@@ -6,54 +6,66 @@ import { Box, Typography } from "@mui/material";
 type Material = {
   id: string;
   description: string;
+  unit: string;
   quantity: number;
   lastUpdate: string;
 };
 
 export default function MaterialsPage() {
   const [materials, setMaterials] = useState<Material[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [rowCount, setRowCount] = useState(0);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
 
   useEffect(() => {
     async function load() {
-      const res = await fetch("/api/materials");
+      setLoading(true);
+      const res = await fetch(`/api/materials?page=${page}&pageSize=${pageSize}`);
       const data = await res.json();
-      setMaterials(data);
+
+      setMaterials(data.rows);
+      setRowCount(data.total);
       setLoading(false);
     }
     load();
-  }, []);
+  }, [page, pageSize]);
 
- const columns: GridColDef[] = [
-  { field: "description", headerName: "Name", flex: 1 },
-  { field: "unit", headerName: "Unit", width: 120 },
-  { field: "quantity", headerName: "Quantity", width: 130 },
-  {
-    field: "lastUpdate",
-    headerName: "Last Update",
-    flex: 1,
-    valueFormatter: (params) =>
-      new Date(params).toLocaleString(),
-  },
-];
+  const columns: GridColDef[] = [
+    { field: "description", headerName: "Name", flex: 1 },
+    { field: "quantity", headerName: "Quantity", width: 130 },
+    { field: "unit", headerName: "Unit", width: 120 },
+    {
+      field: "lastUpdate",
+      headerName: "Last Update",
+      flex: 1,
+      valueFormatter: (params) => new Date(params).toLocaleString(),
+    },
+  ];
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h5" fontWeight="bold" mb={2}>
-        Materials
+    <Box >
+ <Typography variant="h5" fontWeight="bold" mb={3}>
+        📃 Materials
       </Typography>
-      <div style={{ height: 500, width: "100%" }}>
+      <Box sx={{ flexGrow: 1 }}>
         <DataGrid
           rows={materials}
           columns={columns}
           getRowId={(row) => row.id}
-          pageSizeOptions={[5, 10, 20]}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 5 } },
+          paginationMode="server"
+          rowCount={rowCount}
+          paginationModel={{ page, pageSize }}
+          onPaginationModelChange={(model) => {
+            setPage(model.page);
+            setPageSize(model.pageSize);
           }}
           loading={loading}
+          sx={{
+            height: "calc(100vh - 200px)",
+          }}
         />
-      </div>
+      </Box>
     </Box>
   );
 }
