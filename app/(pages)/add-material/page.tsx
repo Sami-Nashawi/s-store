@@ -24,7 +24,7 @@
       setLoading(true);
       setData(null);
 
-      const res = await fetch("/api/materials", {
+      const res = await fetch( `${process.env.NEXT_PUBLIC_BASE_URL}/api/materials`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

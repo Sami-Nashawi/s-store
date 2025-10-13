@@ -24,7 +24,6 @@ export async function GET(req: Request) {
     take: pageSize,
     orderBy: { lastUpdate: "desc" },
   });
-
   return NextResponse.json({ rows: materials, total });
 }
 

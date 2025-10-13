@@ -1,29 +1,19 @@
-"use client";
-import { Box, CssBaseline, Toolbar } from "@mui/material";
-import Navbar from "@/components/Navbar";
-import Sidebar from '@/components/Sidebar';
+import LayoutClient from "@/components/LayoutClient";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const metadata = {
+  title: "My App",
+  description: "A simple MUI + Next.js layout",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body>
-        <Box sx={{ display: "flex" }}>
-      <CssBaseline />
-      <Navbar />
-      <Sidebar />
-       <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          bgcolor: "grey.50",
-          p: 3,
-          minHeight: "100vh",
-        }}
-      >
-        <Toolbar /> {/* Push content below Navbar */}
-        {children}
-      </Box>
-    </Box>
+        <LayoutClient>{children}</LayoutClient>
       </body>
     </html>
   );
