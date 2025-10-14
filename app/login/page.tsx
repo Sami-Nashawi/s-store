@@ -4,16 +4,18 @@ import LoginForm from "@/components/LoginForm";
 export default function LoginPage() {
   return (
     <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100vh"
-      bgcolor="grey.100"
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
     >
-      <Paper elevation={3} sx={{ p: 4, width: "100%", maxWidth: 400 }}>
-        <Typography variant="h5" fontWeight="bold" mb={3} textAlign="center">
-          🔐 Login
+      <Paper sx={{ p: 4, width: 360 }}>
+        <Typography variant="h5" mb={3}>
+          🔑 Login
         </Typography>
+        {/* Client component */}
         <LoginForm />
       </Paper>
     </Box>

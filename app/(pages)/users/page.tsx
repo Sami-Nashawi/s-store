@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 
 export default function UsersPage() {
-  const [filNo, setFilNo] = useState("");
+  const [fileNo, setFileNo] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("abcd@1234"); // default initial password
   const [role, setRole] = useState("WORKER");
@@ -22,11 +22,11 @@ export default function UsersPage() {
     setMessage("");
 
     try {
-      const res = await fetch("/api/users", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          filNo: Number(filNo),
+          fileNo: Number(fileNo),
           name,
           password,
           role,
@@ -36,7 +36,7 @@ export default function UsersPage() {
       const data = await res.json();
       if (res.ok) {
         setMessage(`✅ User created: ${data.name} (${data.role})`);
-        setFilNo("");
+        setFileNo("");
         setName("");
         setPassword("abcd@1234");
         setRole("WORKER");
@@ -62,8 +62,8 @@ export default function UsersPage() {
           <TextField
             label="File Number"
             type="number"
-            value={filNo}
-            onChange={(e) => setFilNo(e.target.value)}
+            value={fileNo}
+            onChange={(e) => setFileNo(e.target.value)}
             required
             fullWidth
           />

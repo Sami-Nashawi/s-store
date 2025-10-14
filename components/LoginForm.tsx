@@ -1,68 +1,77 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Button, TextField, Typography } from "@mui/material";
-import { useRouter } from "next/navigation";
+import {
+  Button,
+  Checkbox,
+  FormControlLabel,
+  TextField,
+  Typography,
+} from "@mui/material";
 
 export default function LoginForm() {
   const [fileNo, setFileNo] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const router = useRouter();
+  const [rememberMe, setRememberMe] = useState(false);
+  const [message, setMessage] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
-
+    setMessage("");
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileNo, password }),
+        body: JSON.stringify({fileNo: Number(fileNo), password, rememberMe }),
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Login failed");
-        return;
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("✅ Login successful");
+        window.location.href = "/"; // redirect to dashboard
+      } else {
+        setMessage("❌ " + data.error);
       }
-
-      // Redirect to dashboard (or materials)
-      router.push("/materials");
-    } catch (err) {
-      setError("Something went wrong.");
+    } catch {
+      setMessage("❌ Login failed");
     }
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Box display="flex" flexDirection="column" gap={2}>
-        <TextField
-          label="File Number"
-          value={fileNo}
-          onChange={(e) => setFileNo(e.target.value)}
-          required
-          fullWidth
-        />
-        <TextField
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          fullWidth
-        />
-
-        <Button type="submit" variant="contained" size="large" fullWidth>
-          Login
-        </Button>
-
-        {error && (
-          <Typography color="error" textAlign="center" mt={1}>
-            {error}
-          </Typography>
-        )}
-      </Box>
+    <form onSubmit={handleLogin}>
+      <TextField
+        fullWidth
+        label="File No"
+        value={fileNo}
+        type="number"
+        onChange={(e) => setFileNo(e.target.value)}
+        margin="normal"
+      />
+      <TextField
+        fullWidth
+        label="Password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        margin="normal"
+      />
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+          />
+        }
+        label="Remember me"
+      />
+      <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
+        Login
+      </Button>
+      {message && (
+        <Typography mt={2} color={message.startsWith("✅") ? "green" : "error"}>
+          {message}
+        </Typography>
+      )}
     </form>
   );
 }

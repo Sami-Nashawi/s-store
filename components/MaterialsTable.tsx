@@ -25,7 +25,8 @@ export default function MaterialsTable() {
       setLoading(true);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/materials?page=${page}&pageSize=${pageSize}`
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/materials?page=${page}&pageSize=${pageSize}`,
+          {credentials: "include"}
         );
 
         if (!res.ok) throw new Error("Failed to fetch materials");

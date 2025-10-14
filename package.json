@@ -21,6 +21,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "bcrypt": "^6.0.0",
     "html5-qrcode": "^2.3.8",
+    "jose": "^6.1.0",
     "jsonwebtoken": "^9.0.2",
     "next": "15.5.4",
     "next-auth": "^4.24.11",
