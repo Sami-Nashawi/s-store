@@ -4,8 +4,9 @@ import { prisma } from "../../../lib/prisma";
 import { z } from "zod";
 
 const CreateUserSchema = z.object({
+  filNo: z.number().min(1),
   name: z.string().min(1),
-  email: z.string().email(),
+  password: z.string().min(8),
   role: z.enum(["MANAGER", "WORKER"]).optional(),
 });
 
@@ -20,9 +21,10 @@ export async function POST(req: Request) {
     const parsed = CreateUserSchema.parse(body);
     const user = await prisma.user.create({
       data: {
+        fileNo:parsed.filNo,
         name: parsed.name,
-        email: parsed.email,
-        role: parsed.role ?? "WORKER",
+        password: parsed.password, // In real app, hash the password
+        role: parsed.role ?? "WORKER",  
       },
     });
     return NextResponse.json(user);

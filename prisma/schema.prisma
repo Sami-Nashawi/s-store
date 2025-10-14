@@ -5,19 +5,18 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  url  	    = env("DATABASE_URL")
 }
 
 
 model User {
   id        String   @id @default(cuid())
+  fileNo    Int   @unique
   name      String
-  email     String   @unique
+  password String
   role      Role     @default(WORKER)
   createdAt DateTime @default(now())
   actions   Action[]
-  // events    Event[]  // events created by user
 }
 
 enum Role {
