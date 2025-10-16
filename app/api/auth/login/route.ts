@@ -19,13 +19,21 @@ export async function POST(req: Request) {
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Invalid credentials" },
+        { status: 401 }
+      );
     }
 
     // Token expiry: 1h vs 7d if "remember me"
     const expiresIn = rememberMe ? "7d" : "1h";
     const token = jwt.sign(
-      { userId: user.id, role: user.role, name: user.name },
+      {
+        userId: user.id,
+        fileNo: user.fileNo,
+        role: user.role,
+        name: user.name,
+      },
       JWT_SECRET,
       { expiresIn }
     );
@@ -39,12 +47,15 @@ export async function POST(req: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: rememberMe ? 60 * 60 * 24 * 7 : 60 * 60, // 7 days or 1h
+      maxAge: rememberMe ? 60 * 60 * 24 * 30 : undefined, // 7 days or 1h
       path: "/",
     });
 
     return res;
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message ?? "Login failed" }, { status: 400 });
+    return NextResponse.json(
+      { error: err?.message ?? "Login failed" },
+      { status: 400 }
+    );
   }
 }

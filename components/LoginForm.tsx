@@ -2,59 +2,69 @@
 
 import { useState } from "react";
 import {
-  Button,
-  Checkbox,
-  FormControlLabel,
+  Box,
   TextField,
-  Typography,
+  Button,
+  FormControlLabel,
+  Checkbox,
+  CircularProgress,
 } from "@mui/material";
 
 export default function LoginForm() {
   const [fileNo, setFileNo] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  async function handleLogin(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage("");
+    setError("");
+    setLoading(true);
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/login`, {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({fileNo: Number(fileNo), password, rememberMe }),
+        body: JSON.stringify({ fileNo, password, rememberMe }),
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        setMessage("✅ Login successful");
-        window.location.href = "/"; // redirect to dashboard
-      } else {
-        setMessage("❌ " + data.error);
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Login failed");
       }
-    } catch {
-      setMessage("❌ Login failed");
+
+      window.location.href = "/";
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <form onSubmit={handleLogin}>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      noValidate
+      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+    >
       <TextField
-        fullWidth
-        label="File No"
-        value={fileNo}
+        label="File Number"
         type="number"
+        value={fileNo}
         onChange={(e) => setFileNo(e.target.value)}
-        margin="normal"
+        required
       />
+
       <TextField
-        fullWidth
         label="Password"
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        margin="normal"
+        required
       />
+
       <FormControlLabel
         control={
           <Checkbox
@@ -64,14 +74,22 @@ export default function LoginForm() {
         }
         label="Remember me"
       />
-      <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
-        Login
+
+      {error && <Box sx={{ color: "error.main", fontSize: 14 }}>{error}</Box>}
+
+      <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        disabled={loading}
+        sx={{ alignSelf: "flex-end", px: 4 }}
+      >
+        {loading ? (
+          <CircularProgress size={22} sx={{ color: "white" }} />
+        ) : (
+          "Login"
+        )}
       </Button>
-      {message && (
-        <Typography mt={2} color={message.startsWith("✅") ? "green" : "error"}>
-          {message}
-        </Typography>
-      )}
-    </form>
+    </Box>
   );
 }

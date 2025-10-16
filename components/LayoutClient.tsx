@@ -3,16 +3,19 @@
 import { Box, CssBaseline, Toolbar } from "@mui/material";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
+import { User } from "@prisma/client";
 
 export default function LayoutClient({
   children,
+  user,
 }: {
   children: React.ReactNode;
+  user: User | null;
 }) {
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <Navbar />
+      <Navbar user={user} />
       <Sidebar />
       <Box
         component="main"
