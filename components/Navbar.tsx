@@ -2,6 +2,7 @@ import { AppBar, Box, Toolbar, Typography } from "@mui/material";
 import ProfileMenu from "./ProfileMenu";
 import { User } from "@prisma/client";
 import Image from "next/image";
+import logo from "@/public/logo-text.png";
 
 export default function Navbar({ user }: { user: User | null }) {
   return (
@@ -13,15 +14,18 @@ export default function Navbar({ user }: { user: User | null }) {
       }}
     >
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        <div>
-          {/* <Image src={"logo.svg"} width={40} height={40} alt="logo" /> */}
-          <Typography variant="h6" noWrap>
-            S Store
-          </Typography>
-        </div>
+        {/* Logo + App Name */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Image
+            src={logo} // place logo in public/logo.png
+            alt="S Store Logo"
+            priority
+            width={150}
+          />
+        </Box>
 
+        {/* Profile menu */}
         <Box>
-          {/* ✅ Pass user info to client profile menu */}
           <ProfileMenu user={user} />
         </Box>
       </Toolbar>
