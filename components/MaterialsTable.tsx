@@ -61,7 +61,6 @@ export default function MaterialsTable() {
       sx={{
         flexGrow: 1,
         height: "calc(100vh - 200px)", // Full-page minus header/footer
-        overflow: "hidden",
       }}
     >
       <DataGrid

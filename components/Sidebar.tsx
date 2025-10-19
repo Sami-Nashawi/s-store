@@ -15,18 +15,39 @@ import AddIcon from "@mui/icons-material/Add";
 import UpdateIcon from "@mui/icons-material/Update"; // new icon
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { User } from "@prisma/client";
 
 const drawerWidth = 240;
 
-export default function Sidebar() {
+export default function Sidebar({ user }: { user: User | null }) {
   const pathname = usePathname();
 
   const menuItems = [
-    { text: "Dashboard", icon: <DashboardIcon />, path: "/" },
-    { text: "Materials", icon: <InventoryIcon />, path: "/materials" },
-    { text: "Add Material", icon: <AddIcon />, path: "/add-material" },
-    { text: "Update Material", icon: <UpdateIcon />, path: "/update-material" },
-    { text: "Users", icon: <PeopleIcon />, path: "/users" },
+    {
+      text: "Dashboard",
+      icon: <DashboardIcon />,
+      path: "/",
+      role: ["MANAGER"],
+    },
+    {
+      text: "Materials",
+      icon: <InventoryIcon />,
+      path: "/materials",
+      role: ["MANAGER"],
+    },
+    {
+      text: "Add Material",
+      icon: <AddIcon />,
+      path: "/add-material",
+      role: ["MANAGER"],
+    },
+    {
+      text: "Update Material",
+      icon: <UpdateIcon />,
+      path: "/update-material",
+      role: ["WORKER", "MANAGER"],
+    },
+    { text: "Users", icon: <PeopleIcon />, path: "/users", role: ["MANAGER"] },
   ];
 
   return (
@@ -44,32 +65,35 @@ export default function Sidebar() {
     >
       <Toolbar />
       <List>
-        {menuItems.map((item, index) => (
-          <ListItem
-            key={index}
-            component={Link}
-            href={item.path}
-            sx={{
-              cursor: "pointer",
-              textDecoration: "none",
-              backgroundColor: pathname == item.path ? "#1876D2" : "",
-              color: pathname == item.path ? "#fff" : "#202020",
-              transition: "all .3s ease",
-              paddingLeft: "28px",
-            }}
-            accessKey=""
-          >
-            <ListItemIcon
-              style={{
-                color: pathname == item.path ? "#fff" : "#202020",
-                transition: "all .3s ease",
-              }}
-            >
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItem>
-        ))}
+        {menuItems.map(
+          (item, index) =>
+            user &&
+            item.role.includes(user.role) && (
+              <ListItem
+                key={index}
+                component={Link}
+                href={item.path}
+                sx={{
+                  cursor: "pointer",
+                  textDecoration: "none",
+                  backgroundColor: pathname === item.path ? "#1876D2" : "",
+                  color: pathname === item.path ? "#fff" : "#202020",
+                  transition: "all .3s ease",
+                  paddingLeft: "28px",
+                }}
+              >
+                <ListItemIcon
+                  style={{
+                    color: pathname === item.path ? "#fff" : "#202020",
+                    transition: "all .3s ease",
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItem>
+            )
+        )}
       </List>
     </Drawer>
   );

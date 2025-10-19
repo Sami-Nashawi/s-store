@@ -20,7 +20,7 @@ export default function Navbar({ user }: { user: User | null }) {
             src={logo} // place logo in public/logo.png
             alt="S Store Logo"
             priority
-            width={150}
+            width={140}
           />
         </Box>
 

@@ -14,10 +14,13 @@ export async function middleware(req: NextRequest) {
     const { payload } = await jwtVerify(token, JWT_SECRET);
 
     if (
-      req.nextUrl.pathname.startsWith("/materials") &&
+      (req.nextUrl.pathname.startsWith("/materials") ||
+        req.nextUrl.pathname.startsWith("/users") ||
+        req.nextUrl.pathname.startsWith("/add-material") ||
+        req.nextUrl.pathname === "/") &&
       payload.role !== "MANAGER"
     ) {
-      return NextResponse.redirect(new URL("/forbidden", req.url));
+      return NextResponse.redirect(new URL("/update-material", req.url));
     }
 
     return NextResponse.next();

@@ -10,7 +10,7 @@ datasource db {
 
 
 model User {
-  id        String   @id @default(cuid())
+  id       Int     @id @default(autoincrement())
   fileNo    Int   @unique
   name      String
   password String
@@ -25,16 +25,16 @@ enum Role {
 }
 
 model Action {
-  id        String   @id @default(cuid())
+    id       Int     @id @default(autoincrement())
   user      User     @relation(fields: [userId], references: [id])
-  userId    String
+  userId    Int
   type      String
   note      String?
   createdAt DateTime @default(now())
 }
 
 model Material {
- id          String   @id @default(cuid())
+   id       Int     @id @default(autoincrement())
   description String
   photoUrl    String?
   quantity    Int      @default(0)
@@ -44,14 +44,14 @@ model Material {
 }
 
 model Event {
-  id         String   @id @default(cuid())
+    id       Int     @id @default(autoincrement())
   type       EventType
  quantity        Int
   note       String?
   // user       User?    @relation(fields: [userId], references: [id])
   // userId     String?
   material   Material @relation(fields: [materialId], references: [id])
-  materialId String
+  materialId Int
   createdAt  DateTime @default(now())
 }
 

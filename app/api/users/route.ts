@@ -4,10 +4,10 @@ import { prisma } from "../../../lib/prisma";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 
+// Schema (no password field required anymore)
 const CreateUserSchema = z.object({
   fileNo: z.number().min(1),
   name: z.string().min(1),
-  password: z.string().min(8),
   role: z.enum(["MANAGER", "WORKER"]).optional(),
 });
 
@@ -42,12 +42,15 @@ export async function GET(req: Request) {
     );
   }
 }
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const parsed = CreateUserSchema.parse(body);
 
-    const hashedPassword = await bcrypt.hash(parsed.password, 10);
+    // Default password for all new users
+    const defaultPassword = "abcd@1234";
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
     const user = await prisma.user.create({
       data: {
@@ -58,8 +61,15 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json(user);
+    return NextResponse.json({
+      id: user.id,
+      fileNo: user.fileNo,
+      name: user.name,
+      role: user.role,
+      createdAt: user.createdAt,
+    });
   } catch (err: any) {
+    console.error("❌ Error creating user:", err);
     return NextResponse.json(
       { error: err?.message ?? "Invalid request" },
       { status: 400 }

@@ -31,9 +31,7 @@ export default function ProfileMenu({ user }: { user: User | null }) {
   return (
     <>
       <IconButton onClick={handleOpen} sx={{ p: 0 }}>
-        <Avatar src="/default-user.png" alt={user.name}>
-          {user.name?.charAt(0) ?? "U"}
-        </Avatar>
+        <Avatar alt={user.name}>{user.name?.charAt(0) ?? "U"}</Avatar>
       </IconButton>
 
       <Menu
@@ -62,11 +60,7 @@ export default function ProfileMenu({ user }: { user: User | null }) {
             mb: 2,
           }}
         >
-          <Avatar
-            src="/default-user.png"
-            alt={user.name}
-            sx={{ width: 64, height: 64, mb: 1 }}
-          />
+          <Avatar alt={user.name} sx={{ width: 64, height: 64, mb: 1 }} />
           <Typography fontWeight="bold" variant="subtitle1">
             {user.name}
           </Typography>

@@ -16,7 +16,7 @@ export default function LayoutClient({
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
       <Navbar user={user} />
-      <Sidebar />
+      <Sidebar user={user} />
       <Box
         component="main"
         sx={{
