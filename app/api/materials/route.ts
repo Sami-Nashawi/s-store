@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 export async function GET(req: Request) {
   const user: any = await getUser(req);
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
   const { searchParams } = new URL(req.url);
   const page = Number(searchParams.get("page") || 0);
@@ -30,7 +30,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const user: any = await getUser(req);
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
 
   const body = await req.json();
@@ -55,9 +55,11 @@ export async function POST(req: Request) {
       include: { events: true },
     });
 
-    return NextResponse.json(material);
+    return NextResponse.json(
+      { ...material, message: "Material created successfully" },
+      { status: 201 }
+    );
   } catch (err) {
-    console.error("❌ Error creating material:", err);
     return NextResponse.json(
       { error: "Failed to create material" },
       { status: 500 }

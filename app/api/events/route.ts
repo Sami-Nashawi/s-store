@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 export async function POST(req: Request) {
   const user: any = await getUser(req);
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
   const body = await req.json();
   const { materialId, type, quantity, note } = body;
@@ -34,7 +34,10 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json(event);
+    return NextResponse.json(
+      { ...event, message: "Material Updated Successfully" },
+      { status: 201 }
+    );
   } catch (err) {
     return NextResponse.json(
       { error: "Failed to create event" },

@@ -15,7 +15,7 @@ const CreateUserSchema = z.object({
 export async function GET(req: Request) {
   const user: any = await getUser(req);
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
 
   try {
@@ -52,7 +52,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const user: any = await getUser(req);
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
 
   try {
@@ -70,8 +70,6 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-
-    // Default password for all new users
     const defaultPassword = "abcd@1234";
     const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
@@ -90,9 +88,9 @@ export async function POST(req: Request) {
       name: user.name,
       role: user.role,
       createdAt: user.createdAt,
+      message: `User Created Successfully`,
     });
   } catch (err: any) {
-    console.error("❌ Error creating user:", err);
     return NextResponse.json(
       { error: err?.message ?? "Invalid request" },
       { status: 400 }
