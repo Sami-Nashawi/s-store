@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 type Material = {
   id: string;
@@ -16,10 +17,10 @@ export default function MaterialsTable() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [rowCount, setRowCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(0); // DataGrid pages start at 0
+  const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
+  const router = useRouter();
 
-  // Fetch whenever page or pageSize changes (including initial mount)
   useEffect(() => {
     async function load() {
       setLoading(true);
@@ -60,7 +61,7 @@ export default function MaterialsTable() {
     <Box
       sx={{
         flexGrow: 1,
-        height: "calc(100vh - 200px)", // Full-page minus header/footer
+        height: "calc(100vh - 200px)",
       }}
     >
       <DataGrid
@@ -74,6 +75,7 @@ export default function MaterialsTable() {
           if (model.page !== page) setPage(model.page);
           if (model.pageSize !== pageSize) setPageSize(model.pageSize);
         }}
+        onRowClick={(params) => router.push(`/materials/${params.row.id}`)}
         loading={loading}
         disableRowSelectionOnClick
         sx={{
@@ -81,6 +83,7 @@ export default function MaterialsTable() {
           "& .MuiDataGrid-virtualScroller": {
             overflowY: "auto !important",
           },
+          cursor: "pointer",
         }}
       />
     </Box>

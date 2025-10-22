@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { z } from "zod";
 import bcrypt from "bcrypt";
+import { getUser } from "@/lib/getUser";
 
 // Schema (no password field required anymore)
 const CreateUserSchema = z.object({
@@ -12,6 +13,11 @@ const CreateUserSchema = z.object({
 });
 
 export async function GET(req: Request) {
+  const user: any = await getUser(req);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") ?? "0", 10);
@@ -44,9 +50,26 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const user: any = await getUser(req);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const parsed = CreateUserSchema.parse(body);
+
+    // Check if fileNo already exists
+    const existing = await prisma.user.findUnique({
+      where: { fileNo: parsed.fileNo },
+    });
+
+    if (existing) {
+      return NextResponse.json(
+        { error: "File number already exists" },
+        { status: 400 }
+      );
+    }
 
     // Default password for all new users
     const defaultPassword = "abcd@1234";

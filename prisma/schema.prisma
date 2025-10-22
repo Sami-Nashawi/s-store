@@ -5,18 +5,17 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url  	    = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id       Int     @id @default(autoincrement())
-  fileNo    Int   @unique
+  id        Int      @id @default(autoincrement())
+  fileNo    Int      @unique
   name      String
-  password String
+  password  String
   role      Role     @default(WORKER)
   createdAt DateTime @default(now())
-  actions   Action[]
+  events    Event[]  // User’s material-related actions
 }
 
 enum Role {
@@ -24,35 +23,27 @@ enum Role {
   WORKER
 }
 
-model Action {
-    id       Int     @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  type      String
-  note      String?
-  createdAt DateTime @default(now())
-}
-
 model Material {
-   id       Int     @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   description String
   photoUrl    String?
   quantity    Int      @default(0)
   lastUpdate  DateTime @updatedAt
-  unit       String
+  unit        String
+  createdAt  DateTime  @default(now())
   events      Event[]
 }
 
 model Event {
-    id       Int     @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   type       EventType
- quantity        Int
+  quantity   Int
   note       String?
-  // user       User?    @relation(fields: [userId], references: [id])
-  // userId     String?
-  material   Material @relation(fields: [materialId], references: [id])
+  user       User?     @relation(fields: [userId], references: [id])
+  userId     Int?
+  material   Material  @relation(fields: [materialId], references: [id])
   materialId Int
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 }
 
 enum EventType {

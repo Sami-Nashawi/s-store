@@ -9,7 +9,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev --name init"
+    "prisma:migrate": "prisma migrate reset && prisma migrate dev --name init && prisma migrate deploy"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

@@ -1,20 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
-import jwt from "jsonwebtoken";
+import { getUser } from "@/lib/getUser";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
-function getUserFromRequest(req: Request) {
-  const token = req.headers.get("cookie")?.split("token=")[1]?.split(";")[0];
-  if (!token) return null;
-  try {
-    return jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
-  } catch {
-    return null;
-  }
-}
-
 export async function GET(req: Request) {
+  const user: any = await getUser(req);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { searchParams } = new URL(req.url);
   const page = Number(searchParams.get("page") || 0);
   const pageSize = Number(searchParams.get("pageSize") || 10);
@@ -29,4 +23,44 @@ export async function GET(req: Request) {
   ]);
 
   return NextResponse.json({ rows, total });
+}
+
+// ✅ POST: Add new material
+
+export async function POST(req: Request) {
+  const user: any = await getUser(req);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await req.json();
+  const { description, quantity, unit, photoUrl } = body;
+
+  try {
+    const material = await prisma.material.create({
+      data: {
+        description,
+        quantity,
+        unit,
+        photoUrl,
+        events: {
+          create: {
+            type: "RECEIVE",
+            quantity,
+            userId: parseInt(user.userId),
+            note: "Initial stock",
+          },
+        },
+      },
+      include: { events: true },
+    });
+
+    return NextResponse.json(material);
+  } catch (err) {
+    console.error("❌ Error creating material:", err);
+    return NextResponse.json(
+      { error: "Failed to create material" },
+      { status: 500 }
+    );
+  }
 }

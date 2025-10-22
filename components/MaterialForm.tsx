@@ -13,7 +13,7 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
-import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import QRScanner from "@/components/QrScanner";
 
 export default function MaterialForm() {
@@ -50,7 +50,12 @@ export default function MaterialForm() {
     <Box>
       <form
         onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "row", gap: "1.5rem", flexWrap: "wrap" }}
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          gap: "1.5rem",
+          flexWrap: "wrap",
+        }}
       >
         <TextField
           label="Material ID (scan or enter)"
@@ -95,7 +100,10 @@ export default function MaterialForm() {
         </Button>
 
         {message && (
-          <Typography mt={3} color={message.startsWith("✅") ? "green" : "error"}>
+          <Typography
+            mt={3}
+            color={message.startsWith("✅") ? "green" : "error"}
+          >
             {message}
           </Typography>
         )}

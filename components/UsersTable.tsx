@@ -2,17 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  MenuItem,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
+import AddUserDialog from "./AddUserDialog";
 
 type User = {
   id: string;
@@ -26,17 +17,12 @@ export default function UsersTable() {
   const [users, setUsers] = useState<User[]>([]);
   const [rowCount, setRowCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(0); // DataGrid pages start at 0
+  const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
 
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
-    fileNo: "",
-    name: "",
-    role: "WORKER",
-  });
 
-  // Fetch whenever page or pageSize changes (including initial mount)
+  // Fetch users
   useEffect(() => {
     async function load() {
       setLoading(true);
@@ -61,34 +47,6 @@ export default function UsersTable() {
     load();
   }, [page, pageSize]);
 
-  // Add User
-  async function handleAddUser() {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileNo: Number(form.fileNo),
-          name: form.name,
-          role: form.role,
-        }),
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error("Failed to add user");
-      const newUser = await res.json();
-
-      // Optimistic update
-      setUsers((prev) => [newUser, ...prev]);
-      setRowCount((prev) => prev + 1);
-
-      setOpen(false);
-      setForm({ fileNo: "", name: "", role: "WORKER" });
-    } catch (err) {
-      console.error("❌ Error adding user:", err);
-    }
-  }
-
   const columns: GridColDef[] = [
     { field: "fileNo", headerName: "File No", width: 120 },
     { field: "name", headerName: "Name", flex: 1 },
@@ -102,13 +60,8 @@ export default function UsersTable() {
   ];
 
   return (
-    <Box
-      sx={{
-        flexGrow: 1,
-        height: "calc(100vh - 200px)",
-      }}
-    >
-      {/* Add User Button */}
+    <Box sx={{ flexGrow: 1, height: "calc(100vh - 200px)" }}>
+      {/* Header + Add Button */}
       <Box
         sx={{
           display: "flex",
@@ -119,7 +72,6 @@ export default function UsersTable() {
         <Typography variant="h5" fontWeight="bold" mb={3}>
           👥 Users
         </Typography>
-
         <Button
           variant="contained"
           onClick={() => setOpen(true)}
@@ -153,56 +105,14 @@ export default function UsersTable() {
       />
 
       {/* Add User Modal */}
-      <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
-        <DialogTitle>➕ Add User</DialogTitle>
-        <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-        >
-          <TextField
-            label="File No"
-            type="number"
-            required
-            value={form.fileNo}
-            onChange={(e) => setForm({ ...form, fileNo: e.target.value })}
-            fullWidth
-            sx={{ mt: 1 }}
-          />
-          <TextField
-            label="Name"
-            required
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            fullWidth
-          />
-          <TextField
-            select
-            label="Role"
-            value={form.role}
-            onChange={(e) => setForm({ ...form, role: e.target.value })}
-            fullWidth
-          >
-            <MenuItem value="WORKER">Worker</MenuItem>
-            <MenuItem value="MANAGER">Manager</MenuItem>
-          </TextField>
-        </DialogContent>
-        <DialogActions sx={{ padding: "0 25px 25px 0" }}>
-          <Button
-            onClick={() => {
-              setOpen(false);
-              setForm({ fileNo: "", name: "", role: "WORKER" });
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleAddUser}
-            variant="contained"
-            disabled={!form.fileNo || !form.name}
-          >
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AddUserDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        onUserAdded={(newUser) => {
+          setUsers((prev) => [newUser, ...prev]);
+          setRowCount((prev) => prev + 1);
+        }}
+      />
     </Box>
   );
 }

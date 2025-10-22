@@ -25,6 +25,7 @@ export default function QrScanner({
 
       scanner.render(
         (decodedText) => {
+          console.log("QR Code scanned:", decodedText);
           onScan(decodedText);
           setScanning(false);
           scanner.clear();

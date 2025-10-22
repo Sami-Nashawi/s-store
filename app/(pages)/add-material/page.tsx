@@ -1,30 +1,32 @@
-  "use client";
-  import { useState } from "react";
-  import { QRCodeCanvas } from "qrcode.react";
-  import {
-    Card,
-    CardContent,
-    Typography,
-    TextField,
-    MenuItem,
-    Button,
-    Box,
-    CircularProgress,
-  } from "@mui/material";
+"use client";
+import { useState } from "react";
+import { QRCodeCanvas } from "qrcode.react";
+import {
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  MenuItem,
+  Button,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 
-  export default function AddMaterialPage() {
-    const [description, setDescription] = useState("");
-    const [quantity, setQuantity] = useState(0);
-    const [unit, setUnit] = useState("pcs");
-    const [loading, setLoading] = useState(false);
-    const [data, setData] = useState<any>(null);
+export default function AddMaterialPage() {
+  const [description, setDescription] = useState("");
+  const [quantity, setQuantity] = useState(0);
+  const [unit, setUnit] = useState("pcs");
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<any>(null);
 
-    async function handleSubmit(e: React.FormEvent) {
-      e.preventDefault();
-      setLoading(true);
-      setData(null);
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setData(null);
 
-      const res = await fetch( `${process.env.NEXT_PUBLIC_BASE_URL}/api/materials`, {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/materials`,
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -32,28 +34,27 @@
           quantity: Number(quantity),
           unit,
         }),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        setData(data);
       }
-      setLoading(false);
-    }
+    );
 
-    function handlePrint() {
-      window.print();
+    const data = await res.json();
+    if (res.ok) {
+      setData(data);
+      console.log("Material added:", data.id);
     }
+    setLoading(false);
+  }
 
-    return (
-      <Box >
-         <Typography variant="h5" fontWeight="bold" mb={3}>
+  function handlePrint() {
+    window.print();
+  }
+
+  return (
+    <Box>
+      <Typography variant="h5" fontWeight="bold" mb={3}>
         ➕ Add Material
       </Typography>
-      <Box
-        sx={{
-        }}
-      >
+      <Box sx={{}}>
         <style jsx global>{`
           @media print {
             body * {
@@ -90,8 +91,6 @@
 
         <Card sx={{ boxShadow: 4, borderRadius: 3 }}>
           <CardContent>
-           
-
             <Box
               component="form"
               onSubmit={handleSubmit}
@@ -138,7 +137,11 @@
                 disabled={loading}
                 sx={{ py: 1.5 }}
               >
-                {loading ? <CircularProgress size={24} color="inherit" /> : "Save"}
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Save"
+                )}
               </Button>
             </Box>
           </CardContent>
@@ -147,7 +150,11 @@
         {data && (
           <Box textAlign="center" mt={4}>
             <div id="printableQR">
-              <QRCodeCanvas value={data.id} size={400} includeMargin={true} />
+              <QRCodeCanvas
+                value={String(data.id)}
+                size={400}
+                includeMargin={true}
+              />
               <Typography variant="h6" sx={{ mt: 2 }}>
                 {data.description} ({data.unit})
               </Typography>
@@ -165,6 +172,6 @@
           </Box>
         )}
       </Box>
-      </Box>
-    );
-  }
+    </Box>
+  );
+}
