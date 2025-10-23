@@ -40,7 +40,6 @@ export default function AddMaterialPage() {
     const data = await res.json();
     if (res.ok) {
       setData(data);
-      console.log("Material added:", data.id);
     }
     setLoading(false);
   }

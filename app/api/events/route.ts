@@ -12,7 +12,6 @@ export async function POST(req: Request) {
   }
   const body = await req.json();
   const { materialId, type, quantity, note } = body;
-  console.log("Creating event:", body);
   try {
     const event = await prisma.event.create({
       data: {

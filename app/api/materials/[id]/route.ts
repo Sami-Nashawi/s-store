@@ -1,26 +1,25 @@
-// app/api/materials/[id]/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "../../../../lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
-
+  const { id } = await context.params; // ✅ await the params
   const material = await prisma.material.findUnique({
     where: { id: Number(id) },
     include: {
       events: {
-        orderBy: { createdAt: "desc" },
-        include: { user: true }, // show who made the change
+        include: { user: true },
       },
     },
   });
 
   if (!material) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return new Response(JSON.stringify({ message: "Material not found" }), {
+      status: 404,
+    });
   }
 
-  return NextResponse.json(material);
+  return new Response(JSON.stringify(material), { status: 200 });
 }

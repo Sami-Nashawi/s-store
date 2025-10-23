@@ -75,15 +75,20 @@ export default function MaterialsTable() {
           if (model.page !== page) setPage(model.page);
           if (model.pageSize !== pageSize) setPageSize(model.pageSize);
         }}
+        // ✅ Navigate to material page when clicking row
         onRowClick={(params) => router.push(`/materials/${params.row.id}`)}
-        loading={loading}
         disableRowSelectionOnClick
+        loading={loading}
         sx={{
           border: "none",
           "& .MuiDataGrid-virtualScroller": {
             overflowY: "auto !important",
           },
           cursor: "pointer",
+          "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within":
+            {
+              outline: "none !important",
+            },
         }}
       />
     </Box>

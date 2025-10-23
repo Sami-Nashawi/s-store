@@ -29,7 +29,7 @@ export default async function Layout({
   // if (!user) redirect('/login');
   return (
     <html lang="en">
-      <body>
+      <body suppressHydrationWarning={true}>
         <LayoutClient user={user}>{children}</LayoutClient>
       </body>
     </html>
