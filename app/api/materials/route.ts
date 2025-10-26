@@ -6,7 +6,6 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
 export async function GET(req: Request) {
   const user: any = await getUser(req);
-  console.log(user);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }

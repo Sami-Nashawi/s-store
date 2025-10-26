@@ -1,8 +1,8 @@
 // app/api/materials/[id]/route.ts
 import { getToken } from "./getToken";
+import { prisma } from "@/lib/prisma";
 
 export async function getUser(req: Request) {
-  console.log("inside getUser", req);
   const token = getToken(req);
   if (!token) return null;
   const user = await prisma?.user.findUnique({
