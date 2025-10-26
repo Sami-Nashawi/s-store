@@ -5,13 +5,13 @@ import { getUser } from "@/lib/getUser";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // 👈 mark it as Promise
 ) {
   const me: any = await getUser(req);
   if (!me) {
     return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
-  const { id } = params;
+  const { id } = await params;
   const user = await prisma.user.findUnique({
     where: { id: Number(id) },
   });

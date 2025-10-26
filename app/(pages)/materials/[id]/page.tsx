@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Box, Typography, Card, CardContent, Divider } from "@mui/material";
 import BackButton from "@/components/BackButton";
@@ -8,7 +7,7 @@ import MaterialEventsTable from "@/components/MaterialEventsTable";
 export default async function MaterialDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
   const res = await fetch(
