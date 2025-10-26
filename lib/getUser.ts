@@ -2,6 +2,7 @@
 import { getToken } from "./getToken";
 
 export async function getUser(req: Request) {
+  console.log("inside getUser", req);
   const token = getToken(req);
   if (!token) return null;
   const user = await prisma?.user.findUnique({
