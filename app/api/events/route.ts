@@ -3,8 +3,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { getUser } from "@/lib/getUser";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
-
 export async function POST(req: Request) {
   const user: any = await getUser(req);
   if (!user) {
@@ -18,7 +16,7 @@ export async function POST(req: Request) {
         type,
         quantity,
         note,
-        userId: user?.userId,
+        userId: user?.id,
         materialId: Number(materialId),
       },
       include: { user: true, material: true },
@@ -32,7 +30,6 @@ export async function POST(req: Request) {
         },
       },
     });
-
     return NextResponse.json(
       { ...event, message: "Material Updated Successfully" },
       { status: 201 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { QRCodeCanvas } from "qrcode.react";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 
 export default function MaterialQRSection({
   id,
@@ -17,8 +17,40 @@ export default function MaterialQRSection({
   }
 
   return (
-    <Box textAlign="center" mt={4}>
-      {/* Print-specific styling */}
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+        p: 2,
+        borderLeft: "1px solid #e0e0e0",
+        textAlign: "center",
+      }}
+    >
+      {/* ✅ Only show the QR code inside the card */}
+      <div id="printableQR">
+        <QRCodeCanvas
+          value={id}
+          size={200} // crisp size on screen
+          includeMargin={true}
+          level="H" // higher error correction = sharper print
+        />
+      </div>
+
+      <Button
+        onClick={handlePrint}
+        variant="contained"
+        color="success"
+        size="small"
+        sx={{ mt: 2 }}
+        className="print-hidden"
+      >
+        🖨️ Print QR
+      </Button>
+
+      {/* ✅ High-quality print version */}
       <style jsx global>{`
         @media print {
           body * {
@@ -40,35 +72,26 @@ export default function MaterialQRSection({
             justify-content: center;
           }
           #printableQR canvas {
-            width: 80% !important;
-            height: auto !important;
+            width: 22cm !important; /* High-quality QR size */
+            height: 22cm !important;
           }
-          #printableQR p {
-            font-size: 2rem;
-            margin-top: 2rem;
+          /* Description and unit displayed only when printing */
+          #printableQR::after {
+            content: "${description.replace(
+              /"/g,
+              '\\"'
+            )} (${unit})"; /* Escaped for safety */
+            display: block;
+            font-size: 40pt;
+            margin-top: 1.5cm;
+            text-align: center;
+            font-weight: bold;
           }
           .print-hidden {
             display: none !important;
           }
         }
       `}</style>
-
-      <div id="printableQR">
-        <QRCodeCanvas value={id} size={400} includeMargin={true} />
-        <Typography variant="h6" sx={{ mt: 2 }}>
-          {description} ({unit})
-        </Typography>
-      </div>
-
-      <Button
-        onClick={handlePrint}
-        variant="contained"
-        color="success"
-        sx={{ mt: 2 }}
-        className="print-hidden"
-      >
-        🖨️ Print QR Code
-      </Button>
     </Box>
   );
 }

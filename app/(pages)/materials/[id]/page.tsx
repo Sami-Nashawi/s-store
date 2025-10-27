@@ -7,22 +7,24 @@ import MaterialEventsTable from "@/components/MaterialEventsTable";
 export default async function MaterialDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
   const { id } = await params;
+
+  // Fetch material details including first page of events
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/materials/${id}`,
-    {
-      cache: "no-store",
-    }
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/materials/${id}?page=0&pageSize=20`,
+    { cache: "no-store" }
   );
 
-  // if (!res.ok) {
-  //   if (res.status === 404) notFound();
-  //   throw new Error("Failed to fetch material details");
-  // }
+  if (!res.ok) {
+    throw new Error(`Failed to fetch material details for ID ${id}`);
+  }
 
   const material = await res.json();
+
+  const initialEvents = material.events || [];
+  const totalEvents = material.totalEvents || initialEvents.length;
 
   return (
     <Box>
@@ -34,9 +36,18 @@ export default async function MaterialDetailPage({
         </Typography>
       </Box>
 
+      {/* ✅ Material Info Card */}
       <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Box display="flex" alignItems="center" gap={3}>
+        <CardContent
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "stretch",
+            gap: 2,
+          }}
+        >
+          {/* Left side — material image + info */}
+          <Box display="flex" alignItems="center" gap={3} flex={1}>
             {material.photoUrl ? (
               <Image
                 src={material.photoUrl}
@@ -67,21 +78,36 @@ export default async function MaterialDetailPage({
               </Typography>
             </Box>
           </Box>
+
+          {/* Right side — QR section */}
+          <Box
+            sx={{
+              width: 200,
+              minWidth: 200,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <MaterialQRSection
+              id={material.id.toString()}
+              description={material.description}
+              unit={material.unit}
+            />
+          </Box>
         </CardContent>
       </Card>
 
       <Divider sx={{ my: 3 }} />
 
-      {/* ✅ QR + print section */}
-      <MaterialEventsTable events={material.events} />
-      <Divider sx={{ my: 4 }} />
-      <MaterialQRSection
-        id={material.id.toString()}
-        description={material.description}
-        unit={material.unit}
+      {/* ✅ Events Table with pagination */}
+      <MaterialEventsTable
+        materialId={Number(id)}
+        events={initialEvents}
+        total={totalEvents}
       />
 
-      {/* ✅ Events Table */}
+      <Divider sx={{ my: 4 }} />
     </Box>
   );
 }
