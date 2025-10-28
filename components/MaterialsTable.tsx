@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { apiClientFetch } from "@/lib/apiClientFetch";
 
 type Material = {
   id: string;
@@ -13,37 +14,35 @@ type Material = {
   lastUpdate: string;
 };
 
-export default function MaterialsTable() {
-  const [materials, setMaterials] = useState<Material[]>([]);
-  const [rowCount, setRowCount] = useState(0);
+interface MaterialsData {
+  rows: Material[];
+  total: number;
+}
+
+export default function MaterialsTable({ data }: { data: MaterialsData }) {
+  const [materials, setMaterials] = useState<Material[]>(data.rows || []);
+  const [rowCount, setRowCount] = useState(data.total || 0);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const router = useRouter();
-
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/materials?page=${page}&pageSize=${pageSize}`,
-          { credentials: "include" }
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch materials");
-        const data = await res.json();
-
-        setMaterials(data.rows);
-        setRowCount(data.total);
-      } catch (err) {
-        console.error("❌ Error fetching materials:", err);
-      } finally {
-        setLoading(false);
-      }
+  async function updateData(pageNumber = page) {
+    setLoading(true);
+    try {
+      const data: MaterialsData = await apiClientFetch(
+        `materials?page=${pageNumber}&pageSize=${pageSize}`,
+        {
+          credentials: "include",
+        }
+      );
+      setMaterials(data.rows || []);
+      setRowCount(data.total || 0);
+      setLoading(false);
+    } catch (err) {
+      console.error("❌ Error fetching events:", err);
+      setLoading(false);
     }
-
-    load();
-  }, [page, pageSize]);
+  }
 
   const columns: GridColDef[] = [
     { field: "description", headerName: "Name", flex: 1 },
@@ -71,9 +70,10 @@ export default function MaterialsTable() {
         paginationMode="server"
         rowCount={rowCount}
         paginationModel={{ page, pageSize }}
-        onPaginationModelChange={(model) => {
-          if (model.page !== page) setPage(model.page);
-          if (model.pageSize !== pageSize) setPageSize(model.pageSize);
+        onPaginationModelChange={async (model) => {
+          setPage(model.page);
+          setPageSize(model.pageSize);
+          await updateData(model.page);
         }}
         // ✅ Navigate to material page when clicking row
         onRowClick={(params) => router.push(`/materials/${params.row.id}`)}

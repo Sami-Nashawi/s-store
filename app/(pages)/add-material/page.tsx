@@ -11,6 +11,7 @@ import {
   Box,
   CircularProgress,
 } from "@mui/material";
+import { apiClientFetch } from "@/lib/apiClientFetch";
 
 export default function AddMaterialPage() {
   const [description, setDescription] = useState("");
@@ -24,21 +25,17 @@ export default function AddMaterialPage() {
     setLoading(true);
     setData(null);
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/materials`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          description,
-          quantity: Number(quantity),
-          unit,
-        }),
-      }
-    );
+    const data = await apiClientFetch(`materials`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        description,
+        quantity: Number(quantity),
+        unit,
+      }),
+    });
 
-    const data = await res.json();
-    if (res.ok) {
+    if (data?.id) {
       setData(data);
     }
     setLoading(false);
@@ -78,8 +75,8 @@ export default function AddMaterialPage() {
               width: 80% !important;
               height: auto !important;
             }
-            #printableQR p {
-              font-size: 2rem;
+            #printableQR h6 {
+              font-size: 40pt;
               margin-top: 2rem;
             }
             .print-hidden {

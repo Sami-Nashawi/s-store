@@ -8,7 +8,6 @@ export async function GET(
   try {
     const { id } = await context.params;
     const url = new URL(req.url);
-    console.log("Page", url.searchParams.get("page"));
     // ✅ Default: 20 per page
     const page = parseInt(url.searchParams.get("page") || "0");
     const pageSize = parseInt(url.searchParams.get("pageSize") || "20");

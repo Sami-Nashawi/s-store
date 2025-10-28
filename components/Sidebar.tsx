@@ -12,7 +12,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import PeopleIcon from "@mui/icons-material/People";
 import AddIcon from "@mui/icons-material/Add";
-import UpdateIcon from "@mui/icons-material/Update"; // new icon
+import UpdateIcon from "@mui/icons-material/Update";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { User } from "@prisma/client";
@@ -50,6 +50,12 @@ export default function Sidebar({ user }: { user: User | null }) {
     { text: "Users", icon: <PeopleIcon />, path: "/users", role: ["MANAGER"] },
   ];
 
+  // ✅ Helper function for route highlighting logic
+  const isActive = (path: string): boolean => {
+    if (path === "/") return pathname === "/"; // dashboard exact
+    return pathname === path || pathname.startsWith(`${path}/`);
+  };
+
   return (
     <Drawer
       variant="permanent"
@@ -76,15 +82,20 @@ export default function Sidebar({ user }: { user: User | null }) {
                 sx={{
                   cursor: "pointer",
                   textDecoration: "none",
-                  backgroundColor: pathname === item.path ? "#1876D2" : "",
-                  color: pathname === item.path ? "#fff" : "#202020",
+                  backgroundColor: isActive(item.path) ? "#1876D2" : "",
+                  color: isActive(item.path) ? "#fff" : "#202020",
                   transition: "all .3s ease",
                   paddingLeft: "28px",
+                  "&:hover": {
+                    backgroundColor: isActive(item.path)
+                      ? "#1565C0"
+                      : "rgba(0, 0, 0, 0.04)",
+                  },
                 }}
               >
                 <ListItemIcon
-                  style={{
-                    color: pathname === item.path ? "#fff" : "#202020",
+                  sx={{
+                    color: isActive(item.path) ? "#fff" : "#202020",
                     transition: "all .3s ease",
                   }}
                 >

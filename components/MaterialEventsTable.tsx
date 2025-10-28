@@ -29,47 +29,22 @@ export default function MaterialEventsTable({
   const [loading, setLoading] = useState(false);
   const [rowCount, setRowCount] = useState(total);
 
-  let firstRender = true;
-
-  useEffect(() => {
-    console.log("MaterialEventsTable useEffect dependencies changed:", {
-      page,
-      pageSize,
-      materialId,
-    });
-    // ✅ Skip only the very first render
-    if (firstRender) {
-      firstRender = false;
-      return;
+  async function fetchEvents(pageNumber = page) {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `/api/materials/${materialId}?page=${pageNumber}&pageSize=${pageSize}`,
+        { cache: "no-store" }
+      );
+      const data = await res.json();
+      setRows(data.events || []);
+      setRowCount(data.totalEvents || 0);
+      setLoading(false);
+    } catch (err) {
+      console.error("❌ Error fetching events:", err);
+      setLoading(false);
     }
-
-    let ignore = false;
-    async function fetchEvents() {
-      console.log("Fetching events for material:", materialId, "page:", page);
-      setLoading(true);
-      try {
-        const res = await fetch(
-          `/api/materials/${materialId}?page=${page}&pageSize=${pageSize}`,
-          { cache: "no-store" }
-        );
-        const data = await res.json();
-        if (!ignore) {
-          setRows(data.events || []);
-          setRowCount(data.totalEvents || 0);
-        }
-      } catch (err) {
-        console.error("❌ Error fetching events:", err);
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    }
-
-    fetchEvents();
-    return () => {
-      ignore = true;
-    };
-  }, [page, pageSize, materialId]);
-
+  }
   const columns: GridColDef[] = [
     { field: "type", headerName: "Event Type", flex: 1 },
     { field: "quantity", headerName: "Quantity", flex: 1 },
@@ -104,9 +79,10 @@ export default function MaterialEventsTable({
         rowCount={rowCount}
         pageSizeOptions={[20]}
         paginationModel={{ page, pageSize }}
-        onPaginationModelChange={(model) => {
+        onPaginationModelChange={async (model) => {
           setPage(model.page);
           setPageSize(model.pageSize);
+          await fetchEvents(model.page);
         }}
         loading={loading}
         disableRowSelectionOnClick

@@ -21,7 +21,6 @@ export async function GET(req: Request) {
     }),
     prisma.material.count(),
   ]);
-
   return NextResponse.json({ rows, total });
 }
 
