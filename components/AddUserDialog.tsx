@@ -11,6 +11,7 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
+import { apiClientFetch } from "@/lib/apiClientFetch";
 
 type Props = {
   open: boolean;
@@ -28,7 +29,7 @@ export default function AddUserDialog({ open, onClose, onUserAdded }: Props) {
     setLoading(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users`, {
+      const data = await apiClientFetch(`users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -39,15 +40,13 @@ export default function AddUserDialog({ open, onClose, onUserAdded }: Props) {
         credentials: "include",
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
+      if (!data.id) {
         setError(data.error || "Failed to add user");
         setLoading(false);
         return;
       }
 
-      onUserAdded(data);
+      onUserAdded(data); // pass full response
       handleClose();
     } catch (err) {
       console.error("❌ Error adding user:", err);

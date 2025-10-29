@@ -88,7 +88,7 @@ export async function POST(req: Request) {
       name: user.name,
       role: user.role,
       createdAt: user.createdAt,
-      message: `User Created Successfully`,
+      message: `New user "${user.name}" was added successfully!`,
     });
   } catch (err: any) {
     return NextResponse.json(

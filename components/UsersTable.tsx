@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Box, Button, Typography } from "@mui/material";
 import AddUserDialog from "./AddUserDialog";
+import { apiClientFetch } from "@/lib/apiClientFetch";
 
 type User = {
   id: string;
@@ -13,39 +14,34 @@ type User = {
   createdAt: string;
 };
 
-export default function UsersTable() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [rowCount, setRowCount] = useState(0);
+interface TableData {
+  rows: User[];
+  total: number;
+}
+
+export default function UsersTable({ data }: { data: TableData }) {
+  const [users, setUsers] = useState<User[]>(data.rows);
+  const [rowCount, setRowCount] = useState(data.total);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
-
   const [open, setOpen] = useState(false);
 
-  // Fetch users
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/users?page=${page}&pageSize=${pageSize}`,
-          { credentials: "include" }
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch users");
-        const data = await res.json();
-
-        setUsers(data.rows);
-        setRowCount(data.total);
-      } catch (err) {
-        console.error("❌ Error fetching users:", err);
-      } finally {
-        setLoading(false);
-      }
+  async function updateData(pageNumber = page) {
+    setLoading(true);
+    try {
+      const data: TableData = await apiClientFetch(
+        `users?page=${pageNumber}&pageSize=${pageSize}`,
+        { credentials: "include" }
+      );
+      setUsers(data.rows || []);
+      setRowCount(data.total || 0);
+    } catch (err) {
+      console.error("❌ Error fetching users:", err);
+    } finally {
+      setLoading(false);
     }
-
-    load();
-  }, [page, pageSize]);
+  }
 
   const columns: GridColDef[] = [
     { field: "fileNo", headerName: "File No", width: 120 },
@@ -61,7 +57,7 @@ export default function UsersTable() {
 
   return (
     <Box sx={{ flexGrow: 1, height: "calc(100vh - 200px)" }}>
-      {/* Header + Add Button */}
+      {/* Header */}
       <Box
         sx={{
           display: "flex",
@@ -90,9 +86,10 @@ export default function UsersTable() {
         paginationMode="server"
         rowCount={rowCount}
         paginationModel={{ page, pageSize }}
-        onPaginationModelChange={(model) => {
-          if (model.page !== page) setPage(model.page);
-          if (model.pageSize !== pageSize) setPageSize(model.pageSize);
+        onPaginationModelChange={async (model) => {
+          setPage(model.page);
+          setPageSize(model.pageSize);
+          await updateData(model.page);
         }}
         loading={loading}
         disableRowSelectionOnClick
@@ -109,7 +106,20 @@ export default function UsersTable() {
         open={open}
         onClose={() => setOpen(false)}
         onUserAdded={(newUser) => {
-          setUsers((prev) => [newUser, ...prev]);
+          if (page === 0) {
+            // 🟢 If we are on first page → prepend and remove last if needed
+            setUsers((prev) => {
+              const updated = [newUser, ...prev];
+              return updated.slice(0, pageSize);
+            });
+          } else {
+            // 🔵 If we are on another page → do not mutate table
+            console.log(
+              "User created successfully! You’ll see them on the first page."
+            );
+          }
+
+          // Always increment total count
           setRowCount((prev) => prev + 1);
         }}
       />
