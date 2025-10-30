@@ -1,8 +1,18 @@
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Divider,
+  Button,
+} from "@mui/material";
+import { ArrowBack } from "@mui/icons-material";
 import Image from "next/image";
-import { Box, Typography, Card, CardContent, Divider } from "@mui/material";
-import BackButton from "@/components/BackButton";
+import Link from "next/link";
 import MaterialQRSection from "@/components/MaterialQRSection";
 import MaterialEventsTable from "@/components/MaterialEventsTable";
+import DeleteMaterialDialog from "@/components/DeleteMaterialDialog";
+import { apiFetch } from "@/lib/apiFetch";
 
 export default async function MaterialDetailPage({
   params,
@@ -11,32 +21,59 @@ export default async function MaterialDetailPage({
 }) {
   const { id } = await params;
 
-  // Fetch material details including first page of events
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/materials/${id}?page=0&pageSize=20`,
-    { cache: "no-store" }
-  );
+  const material = await apiFetch(`materials/${id}`, {
+    cache: "no-store",
+  });
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch material details for ID ${id}`);
+  if (material.error) {
+    return (
+      <Box textAlign="center" mt={4}>
+        <Typography>Material not found.</Typography>
+      </Box>
+    );
   }
-
-  const material = await res.json();
 
   const initialEvents = material.events || [];
   const totalEvents = material.totalEvents || initialEvents.length;
 
   return (
     <Box>
-      {/* ✅ Back button */}
-      <Box sx={{ display: "flex", columnGap: 2 }}>
-        <BackButton />
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
-          Material Details
-        </Typography>
+      {/* Header Buttons */}
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        mb={2}
+      >
+        <Box display="flex" alignItems="center" gap={2}>
+          {/* Back Button (filled style) */}
+          <Link href="/materials">
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{
+                minWidth: 45,
+                width: 45,
+                height: 45,
+                borderRadius: "50%",
+                boxShadow: "0 2px 8px rgba(25, 118, 210, 0.4)",
+                "&:hover": { backgroundColor: "#1565c0" },
+              }}
+            >
+              <ArrowBack />
+            </Button>
+          </Link>
+
+          <Typography variant="h4" fontWeight="bold">
+            Material Details
+          </Typography>
+        </Box>
+
+        {/* Delete Button (client component) */}
+        <DeleteMaterialDialog id={id} />
       </Box>
 
-      {/* ✅ Material Info Card */}
+      {/* Material Info */}
       <Card sx={{ mb: 3 }}>
         <CardContent
           sx={{
@@ -46,7 +83,7 @@ export default async function MaterialDetailPage({
             gap: 2,
           }}
         >
-          {/* Left side — material image + info */}
+          {/* Left side — image & info */}
           <Box display="flex" alignItems="center" gap={3} flex={1}>
             {material.photoUrl ? (
               <Image
@@ -79,7 +116,7 @@ export default async function MaterialDetailPage({
             </Box>
           </Box>
 
-          {/* Right side — QR section */}
+          {/* Right side — QR */}
           <Box
             sx={{
               width: 200,
@@ -100,7 +137,6 @@ export default async function MaterialDetailPage({
 
       <Divider sx={{ my: 3 }} />
 
-      {/* ✅ Events Table with pagination */}
       <MaterialEventsTable
         materialId={Number(id)}
         events={initialEvents}

@@ -2,6 +2,7 @@ import LayoutClient from "@/components/LayoutClient";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { User } from "@prisma/client";
+import MuiThemeRegistry from "@/providers/MuiThemeRegistry";
 
 export const metadata = {
   title: "My App",
@@ -28,10 +29,8 @@ export default async function Layout({
   }
   // if (!user) redirect('/login');
   return (
-    <html lang="en">
-      <body suppressHydrationWarning={true}>
-        <LayoutClient user={user}>{children}</LayoutClient>
-      </body>
-    </html>
+    <MuiThemeRegistry>
+      <LayoutClient user={user}>{children}</LayoutClient>
+    </MuiThemeRegistry>
   );
 }

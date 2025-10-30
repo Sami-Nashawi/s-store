@@ -112,11 +112,6 @@ export default function UsersTable({ data }: { data: TableData }) {
               const updated = [newUser, ...prev];
               return updated.slice(0, pageSize);
             });
-          } else {
-            // 🔵 If we are on another page → do not mutate table
-            console.log(
-              "User created successfully! You’ll see them on the first page."
-            );
           }
 
           // Always increment total count

@@ -32,7 +32,7 @@ export async function GET(
 
     if (!material) {
       return NextResponse.json(
-        { message: "Material not found" },
+        { message: "Material not found", error: "Material not found" },
         { status: 404 }
       );
     }
@@ -47,6 +47,30 @@ export async function GET(
   } catch (error) {
     return NextResponse.json(
       { message: "Failed to fetch material", error: (error as Error).message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await context.params;
+
+    await prisma.event.deleteMany({
+      where: { materialId: Number(id) },
+    });
+
+    await prisma.material.delete({
+      where: { id: Number(id) },
+    });
+    return NextResponse.json({ message: "Material deleted successfully" });
+  } catch (error) {
+    console.error("❌ Delete error:", error);
+    return NextResponse.json(
+      { message: "Failed to delete material", error: (error as Error).message },
       { status: 500 }
     );
   }

@@ -61,7 +61,6 @@ export async function POST(req: Request) {
 
   const body = await req.json();
   const { description, quantity, unit, photoUrl } = body;
-
   try {
     const material = await prisma.material.create({
       data: {
@@ -73,7 +72,7 @@ export async function POST(req: Request) {
           create: {
             type: "RECEIVE",
             quantity,
-            userId: parseInt(user.userId),
+            userId: parseInt(user.id),
             note: "Initial stock",
           },
         },

@@ -10,7 +10,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body cz-shortcut-listen="true">{children}</body>
+      <body>{children}</body>
     </html>
   );
 }
