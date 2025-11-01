@@ -3,6 +3,11 @@ import LoginForm from "@/components/LoginForm";
 import Image from "next/image";
 import logo from "@/public/logo-text.png";
 
+export const metadata = {
+  title: "Login",
+  description: "Login page for loging the user in the system",
+};
+
 export default function LoginPage() {
   return (
     <Box

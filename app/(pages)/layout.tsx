@@ -4,10 +4,6 @@ import jwt from "jsonwebtoken";
 import { User } from "@prisma/client";
 import MuiThemeRegistry from "@/providers/MuiThemeRegistry";
 
-export const metadata = {
-  title: "My App",
-  description: "A simple MUI + Next.js layout",
-};
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
 export default async function Layout({

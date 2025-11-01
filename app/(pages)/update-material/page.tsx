@@ -1,6 +1,11 @@
 import { Box, Typography, Paper } from "@mui/material";
 import MaterialForm from "@/components/MaterialForm";
 
+export const metadata = {
+  title: "Update Material",
+  description:
+    "Update Material for updating existing material data in the system",
+};
 export default function UpdateMaterialPage() {
   return (
     <Box>
