@@ -31,7 +31,13 @@ export default function DonutChart({
           Stock Condition
         </Typography>
 
-        <Box sx={{ width: "100%", height: 260 }}>
+        <Box
+          sx={{
+            width: "100%",
+            height: 260,
+            mt: "2rem",
+          }}
+        >
           <ResponsiveContainer>
             <PieChart>
               <Pie

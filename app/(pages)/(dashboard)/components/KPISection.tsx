@@ -37,7 +37,7 @@ export default function KPISection({
       sx={{
         display: "flex",
         justifyContent: "space-between",
-        gap: 2,
+        gap: 3,
       }}
     >
       {items.map((item) => (
@@ -49,7 +49,7 @@ export default function KPISection({
             flex: 1,
           }}
         >
-          <CardContent sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <CardContent sx={{ display: "flex", alignItems: "center", gap: 3 }}>
             {item.icon}
             <Box>
               <Typography fontSize={28} fontWeight="bold">

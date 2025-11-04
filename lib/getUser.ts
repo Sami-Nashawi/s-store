@@ -3,11 +3,14 @@ import { getToken } from "./getToken";
 import { prisma } from "@/lib/prisma";
 
 export async function getUser(req: Request) {
-  const token = getToken(req);
-  if (!token) return null;
-  const user = await prisma?.user.findUnique({
-    where: { id: Number(token?.userId) },
-  });
-
-  return user;
+  try {
+    const token = getToken(req);
+    if (!token) return null;
+    const user = await prisma?.user.findUnique({
+      where: { id: Number(token?.userId) },
+    });
+    return user;
+  } catch (error) {
+    return null;
+  }
 }

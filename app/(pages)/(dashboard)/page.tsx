@@ -20,7 +20,15 @@ export default async function DashboardPage() {
   }
 
   return (
-    <Box sx={{ p: 3, mx: "auto" }}>
+    <Box
+      sx={{
+        p: 3,
+        mx: "auto",
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
+      }}
+    >
       <Typography variant="h4" fontWeight="bold" mb={2}>
         📊 S-Store Dashboard
       </Typography>
@@ -36,26 +44,39 @@ export default async function DashboardPage() {
       <Box
         sx={{
           display: "grid",
+          gridTemplateColumns: "repeat(5, 1fr)",
           gap: 3,
-          mt: 3,
-          gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))",
+          alignItems: "start",
         }}
       >
-        <DonutChart
-          low={data.lowStockItems?.length ?? 0}
-          total={data.totalMaterials ?? 0}
-        />
+        {/* ✅ Row 1 - Left: Stock Condition (1 column) */}
+        <Box sx={{ gridColumn: "span 1" }}>
+          <DonutChart
+            low={data.lowStockItems.length}
+            total={data.totalMaterials}
+          />
+        </Box>
 
-        <BarChartSection
-          monthlyReceive={data.monthlyReceive}
-          monthlyWithdraw={data.monthlyWithdraw}
-        />
+        {/* ✅ Row 1 - Right: Monthly Chart (4 columns) */}
+        <Box sx={{ gridColumn: "span 4" }}>
+          <BarChartSection
+            monthlyReceive={data.monthlyReceive}
+            monthlyWithdraw={data.monthlyWithdraw}
+          />
+        </Box>
 
-        <LatestMaterials materials={data.latestMaterials ?? []} />
+        {/* ✅ Row 2 - Latest Materials (2 columns) */}
+        <Box sx={{ gridColumn: "span 2" }}>
+          <LatestMaterials materials={data.latestMaterials} />
+        </Box>
+
+        {/* ✅ Row 2 - Low Stock List (3 columns) */}
+        <Box sx={{ gridColumn: "span 3" }}>
+          <LowStockSection items={data.lowStockItems ?? []} />
+        </Box>
       </Box>
 
       {/* ✅ Low Stock List */}
-      <LowStockSection items={data.lowStockItems ?? []} />
 
       {/* ✅ Quick Buttons */}
       <QuickActions />

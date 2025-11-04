@@ -154,3 +154,17 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Remove focus outline from all Recharts elements */
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-wrapper svg:focus,
+.recharts-wrapper svg:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Extra safety */
+svg:focus {
+  outline: none !important;
+}
