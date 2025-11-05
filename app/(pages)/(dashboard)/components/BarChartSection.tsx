@@ -50,7 +50,7 @@ export default function BarChartSection({
           sx={{
             width: "100%",
             height: 260,
-            mt: "4rem",
+            mt: "2rem",
           }}
         >
           <ResponsiveContainer width="95%" height="100%">

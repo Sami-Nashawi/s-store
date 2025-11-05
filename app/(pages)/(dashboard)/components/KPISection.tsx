@@ -21,7 +21,7 @@ export default function KPISection({
       icon: <InventoryIcon fontSize="large" />,
     },
     {
-      label: "Low Stock Items",
+      label: "Low Stock Materials",
       value: lowStockCount,
       icon: <WarningIcon fontSize="large" />,
     },

@@ -23,7 +23,6 @@ export default async function Layout({
       user = null;
     }
   }
-  // if (!user) redirect('/login');
   return (
     <MuiThemeRegistry>
       <LayoutClient user={user}>{children}</LayoutClient>

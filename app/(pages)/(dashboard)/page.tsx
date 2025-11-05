@@ -4,7 +4,6 @@ import { Box, Typography } from "@mui/material";
 import KPISection from "./components/KPISection";
 import LowStockSection from "./components/LowStockSection";
 import LatestMaterials from "./components/LatestMaterials";
-import QuickActions from "./components/QuickActions";
 import DonutChart from "./components/DonutChart";
 import BarChartSection from "./components/BarChartSection";
 
@@ -22,11 +21,11 @@ export default async function DashboardPage() {
   return (
     <Box
       sx={{
-        p: 3,
         mx: "auto",
         display: "flex",
         flexDirection: "column",
         gap: 2,
+        justifyContent: "center",
       }}
     >
       <Typography variant="h4" fontWeight="bold" mb={2}>
@@ -66,12 +65,12 @@ export default async function DashboardPage() {
         </Box>
 
         {/* ✅ Row 2 - Latest Materials (2 columns) */}
-        <Box sx={{ gridColumn: "span 2" }}>
+        <Box sx={{ gridColumn: "span 2", height: "100%" }}>
           <LatestMaterials materials={data.latestMaterials} />
         </Box>
 
-        {/* ✅ Row 2 - Low Stock List (3 columns) */}
-        <Box sx={{ gridColumn: "span 3" }}>
+        {/* ✅ Row 2 - Low Stock Materials (3 columns) */}
+        <Box sx={{ gridColumn: "span 3", height: "100%" }}>
           <LowStockSection items={data.lowStockItems ?? []} />
         </Box>
       </Box>
@@ -79,7 +78,6 @@ export default async function DashboardPage() {
       {/* ✅ Low Stock List */}
 
       {/* ✅ Quick Buttons */}
-      <QuickActions />
     </Box>
   );
 }

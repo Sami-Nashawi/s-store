@@ -10,6 +10,9 @@ export default function LatestMaterials({ materials }: { materials: any[] }) {
         flex: 1,
         minWidth: "350px",
         boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <CardContent>

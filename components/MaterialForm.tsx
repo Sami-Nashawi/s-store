@@ -12,38 +12,54 @@ import {
   InputLabel,
   InputAdornment,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import QRScanner from "@/components/QrScanner";
+import { apiClientFetch } from "@/lib/apiClientFetch";
 
 export default function MaterialForm() {
   const [materialId, setMaterialId] = useState("");
+  const [materialDescription, setMaterialDescription] = useState("");
   const [type, setType] = useState("RECEIVE");
   const [quantity, setQuantity] = useState<number>(0);
   const [message, setMessage] = useState("");
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const isFormValid = materialId.trim() !== "" && quantity > 0;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setMessage("");
+    if (!isFormValid || loading) return;
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/events`, {
+    setMessage("");
+    setLoading(true);
+
+    const data = await apiClientFetch(`events`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-user-id": "manager-user-id",
       },
-      body: JSON.stringify({ materialId, type, quantity: Number(quantity) }),
+      body: JSON.stringify({
+        materialId,
+        type,
+        quantity: Number(quantity),
+      }),
     });
 
-    const data = await res.json();
-    if (res.ok) {
-      setMessage(`✅ ${type} OK → New Quantity: ${data.material.quantity}`);
+    if (data?.error) {
+      setMessage(`❌ ${data.error}`);
+    } else if (data?.id) {
+      setMessage("✅ Material updated successfully");
       setQuantity(0);
       setMaterialId("");
-    } else {
-      setMessage(`❌ Error: ${data.error}`);
+      setMaterialDescription("");
     }
+
+    setLoading(false);
   }
 
   return (
@@ -57,6 +73,7 @@ export default function MaterialForm() {
           flexWrap: "wrap",
         }}
       >
+        {/* Material ID */}
         <TextField
           label="Material ID (scan or enter)"
           value={materialId}
@@ -74,6 +91,30 @@ export default function MaterialForm() {
           }}
         />
 
+        {/* ✅ Clean Material Description Preview */}
+        {materialDescription && (
+          <Box
+            sx={{
+              width: "100%",
+              mt: -1,
+              px: 2,
+              py: 1,
+              borderRadius: 2,
+              backgroundColor: "#f3f6fc",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              border: "1px solid #dce3f1",
+            }}
+          >
+            <InfoOutlinedIcon fontSize="small" sx={{ color: "#4A6FA5" }} />
+            <Typography sx={{ fontSize: 14, color: "#2a3b55" }}>
+              <strong>{materialDescription}</strong>
+            </Typography>
+          </Box>
+        )}
+
+        {/* Action */}
         <FormControl fullWidth>
           <InputLabel>Action</InputLabel>
           <Select
@@ -86,6 +127,7 @@ export default function MaterialForm() {
           </Select>
         </FormControl>
 
+        {/* Quantity */}
         <TextField
           type="number"
           label="Quantity"
@@ -95,21 +137,26 @@ export default function MaterialForm() {
           fullWidth
         />
 
-        <Button type="submit" variant="contained" color="primary" size="large">
-          Save
+        {/* Save Button */}
+        <Button
+          type="submit"
+          variant="contained"
+          size="medium"
+          disabled={!isFormValid || loading}
+          startIcon={
+            loading ? <CircularProgress size={18} color="inherit" /> : null
+          }
+          sx={{
+            textTransform: "none",
+            height: "45px",
+            px: 3,
+          }}
+        >
+          {loading ? "Saving..." : "Save"}
         </Button>
-
-        {message && (
-          <Typography
-            mt={3}
-            color={message.startsWith("✅") ? "green" : "error"}
-          >
-            {message}
-          </Typography>
-        )}
       </form>
 
-      {/* Fullscreen Scanner Overlay */}
+      {/* QR Scanner Overlay */}
       {scannerOpen && (
         <Box
           sx={{
@@ -127,11 +174,25 @@ export default function MaterialForm() {
           }}
         >
           <QRScanner
-            onScan={(id) => {
-              setMaterialId(id);
+            onScan={(text) => {
+              if (!text) return;
+
+              // format: id=1,description=upvc pipe
+              const parts = text.split(",");
+              const id = parts
+                .find((p) => p.startsWith("id="))
+                ?.replace("id=", "");
+              const desc = parts
+                .find((p) => p.startsWith("description="))
+                ?.replace("description=", "");
+
+              if (id) setMaterialId(id.trim());
+              if (desc) setMaterialDescription(desc.trim());
+
               setScannerOpen(false);
             }}
           />
+
           <Button
             onClick={() => setScannerOpen(false)}
             variant="contained"

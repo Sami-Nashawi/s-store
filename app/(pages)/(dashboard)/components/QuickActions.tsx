@@ -9,9 +9,8 @@ import Link from "next/link";
 
 export default function QuickActions() {
   const actions = [
-    { label: "Add Material", icon: <AddIcon />, href: "/materials/add" },
-    { label: "Receive", icon: <MoveToInboxIcon />, href: "/materials/receive" },
-    { label: "Withdraw", icon: <OutboxIcon />, href: "/materials/withdraw" },
+    { label: "Add Material", icon: <AddIcon />, href: "/add-materials" },
+    { label: "Receive", icon: <MoveToInboxIcon />, href: "/ update-material" },
     { label: "View Materials", icon: <InventoryIcon />, href: "/materials" },
   ];
 

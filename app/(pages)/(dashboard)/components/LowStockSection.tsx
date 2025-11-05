@@ -9,8 +9,10 @@ export default function LowStockSection({ items }: { items: any[] }) {
     <Card
       sx={{
         borderRadius: 3,
-        mt: 4,
         boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <CardContent>

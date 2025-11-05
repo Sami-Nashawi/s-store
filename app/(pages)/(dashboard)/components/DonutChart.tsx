@@ -35,7 +35,6 @@ export default function DonutChart({
           sx={{
             width: "100%",
             height: 260,
-            mt: "2rem",
           }}
         >
           <ResponsiveContainer>
@@ -55,7 +54,7 @@ export default function DonutChart({
           </ResponsiveContainer>
         </Box>
 
-        <Typography textAlign="center" mt={1} color="text.secondary">
+        <Typography textAlign="center" color="text.secondary">
           Low stock: {low} / {total}
         </Typography>
       </CardContent>
