@@ -1,11 +1,11 @@
 // app/api/users/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "../../../lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import { getUser } from "@/lib/getUser";
 
-// Schema (no password field required anymore)
+// ✅ Schema for creating a user
 const CreateUserSchema = z.object({
   fileNo: z.number().min(1),
   name: z.string().min(1),
@@ -13,21 +13,62 @@ const CreateUserSchema = z.object({
 });
 
 export async function GET(req: Request) {
-  const user: any = await getUser(req);
-  if (!user) {
+  const currentUser: any = await getUser(req);
+  if (!currentUser) {
     return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
 
   try {
     const { searchParams } = new URL(req.url);
+
     const page = parseInt(searchParams.get("page") ?? "0", 10);
     const pageSize = parseInt(searchParams.get("pageSize") ?? "20", 10);
 
+    const sortField = searchParams.get("sortField") || "createdAt";
+    const sortOrder = searchParams.get("sortOrder") || "desc";
+
+    const filters = searchParams.get("filters")
+      ? JSON.parse(searchParams.get("filters")!)
+      : {};
+
+    const where: any = {};
+
+    const numericFields = ["fileNo"];
+
+    for (const [key, value] of Object.entries(filters)) {
+      if (!value) continue;
+      const val = String(value).trim();
+
+      // ✅ Numeric fields
+      if (numericFields.includes(key)) {
+        const numValue = parseInt(val);
+        if (!isNaN(numValue)) where[key] = { equals: numValue };
+        continue;
+      }
+
+      // ✅ Special ENUM handling for "role"
+      if (key === "role") {
+        const roles = ["MANAGER", "WORKER"];
+        const matchedRoles = roles.filter((r) =>
+          r.toLowerCase().includes(val.toLowerCase())
+        );
+
+        if (matchedRoles.length > 0) {
+          where.role = { in: matchedRoles };
+        }
+        continue;
+      }
+
+      // ✅ Regular string "contains" filter for name
+      where[key] = { contains: val, mode: "insensitive" };
+    }
+
     const [rows, total] = await Promise.all([
       prisma.user.findMany({
+        where,
         skip: page * pageSize,
         take: pageSize,
-        orderBy: { createdAt: "desc" },
+        orderBy: { [sortField]: sortOrder },
         select: {
           id: true,
           fileNo: true,
@@ -36,7 +77,8 @@ export async function GET(req: Request) {
           createdAt: true,
         },
       }),
-      prisma.user.count(),
+
+      prisma.user.count({ where }),
     ]);
 
     return NextResponse.json({ rows, total });
@@ -49,9 +91,10 @@ export async function GET(req: Request) {
   }
 }
 
+// ✅ POST — Create User
 export async function POST(req: Request) {
-  const user: any = await getUser(req);
-  if (!user) {
+  const currentUser: any = await getUser(req);
+  if (!currentUser) {
     return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
 
@@ -59,7 +102,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const parsed = CreateUserSchema.parse(body);
 
-    // Check if fileNo already exists
+    // ✅ Check if fileNo already exists
     const existing = await prisma.user.findUnique({
       where: { fileNo: parsed.fileNo },
     });
@@ -70,10 +113,11 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
     const defaultPassword = "abcd@1234";
     const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
-    const user = await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         fileNo: parsed.fileNo,
         name: parsed.name,
@@ -83,12 +127,12 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({
-      id: user.id,
-      fileNo: user.fileNo,
-      name: user.name,
-      role: user.role,
-      createdAt: user.createdAt,
-      message: `New user "${user.name}" was added successfully!`,
+      id: newUser.id,
+      fileNo: newUser.fileNo,
+      name: newUser.name,
+      role: newUser.role,
+      createdAt: newUser.createdAt,
+      message: `New user "${newUser.name}" was added successfully!`,
     });
   } catch (err: any) {
     return NextResponse.json(

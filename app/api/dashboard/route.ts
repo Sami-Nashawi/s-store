@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getUser } from "@/lib/getUser";
 
 const LOW_STOCK_THRESHOLD = 50;
 
-export async function GET() {
+export async function GET(req: Request) {
+  const user: any = await getUser(req);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
+  }
   try {
     // ✅ 1. Total materials (always a number)
     const totalMaterials = (await prisma.material.count()) ?? 0;

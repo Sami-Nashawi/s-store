@@ -50,6 +50,7 @@ export default function ProfileMenu({ user }: { user: User | null }) {
         }}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+        disableScrollLock={true}
       >
         {/* Profile Section */}
         <Box

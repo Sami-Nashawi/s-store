@@ -5,6 +5,11 @@ import { getUser } from "@/lib/getUser";
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
 export async function GET(req: Request) {
+  const user: any = await getUser(req);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") || "0");
   const pageSize = parseInt(searchParams.get("pageSize") || "20");

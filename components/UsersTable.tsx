@@ -1,9 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Button, Typography } from "@mui/material";
+import {
+  DataGrid,
+  GridColDef,
+  GridSortModel,
+  GridFilterModel,
+  getGridStringOperators,
+} from "@mui/x-data-grid";
+import { Box, Button, Typography, IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 import AddUserDialog from "./AddUserDialog";
+import DeleteUserDialog from "./DeleteUserDialog";
 import { apiClientFetch } from "@/lib/apiClientFetch";
 
 type User = {
@@ -23,19 +32,54 @@ export default function UsersTable({ data }: { data: TableData }) {
   const [users, setUsers] = useState<User[]>(data.rows);
   const [rowCount, setRowCount] = useState(data.total);
   const [loading, setLoading] = useState(false);
+
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
-  const [open, setOpen] = useState(false);
 
-  async function updateData(pageNumber = page) {
+  const [sortModel, setSortModel] = useState<GridSortModel>([
+    { field: "createdAt", sort: "desc" },
+  ]);
+
+  const [filterModel, setFilterModel] = useState<GridFilterModel>({
+    items: [],
+  });
+
+  // ✅ Dialog states
+  const [openAdd, setOpenAdd] = useState(false);
+  const [deleteUser, setDeleteUser] = useState<User | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // ✅ Only "contains" operator for all string columns
+  const containsOnlyOperator = [
+    getGridStringOperators().find((op) => op.value === "contains")!,
+  ];
+
+  // ✅ Fetch Users with pagination, sorting & filtering
+  async function updateData(
+    pageNumber = page,
+    currentSort = sortModel,
+    currentFilter = filterModel
+  ) {
     setLoading(true);
+
     try {
+      const sortField = currentSort[0]?.field || "createdAt";
+      const sortOrder = currentSort[0]?.sort || "desc";
+
+      const filters: Record<string, string> = {};
+      currentFilter.items.forEach((item) => {
+        if (item.value?.toString().trim()) filters[item.field] = item.value;
+      });
+
       const data: TableData = await apiClientFetch(
-        `users?page=${pageNumber}&pageSize=${pageSize}`,
+        `users?page=${pageNumber}&pageSize=${pageSize}&sortField=${sortField}&sortOrder=${sortOrder}&filters=${encodeURIComponent(
+          JSON.stringify(filters)
+        )}`,
         { credentials: "include" }
       );
-      setUsers(data.rows || []);
-      setRowCount(data.total || 0);
+
+      setUsers(data.rows);
+      setRowCount(data.total);
     } catch (err) {
       console.error("❌ Error fetching users:", err);
     } finally {
@@ -43,15 +87,71 @@ export default function UsersTable({ data }: { data: TableData }) {
     }
   }
 
+  // ✅ Delete User
+  async function handleDelete() {
+    if (!deleteUser) return;
+
+    setDeleteLoading(true);
+
+    const res = await apiClientFetch(`users/${deleteUser.id}`, {
+      method: "DELETE",
+    });
+
+    setDeleteLoading(false);
+
+    if (res?.error) {
+      alert(res.error);
+      return;
+    }
+
+    setUsers((prev) => prev.filter((u) => u.id !== deleteUser.id));
+    setRowCount((prev) => prev - 1);
+    setDeleteUser(null);
+  }
+
+  // ✅ Table Columns with filters
   const columns: GridColDef[] = [
-    { field: "fileNo", headerName: "File No", width: 120 },
-    { field: "name", headerName: "Name", flex: 1 },
-    { field: "role", headerName: "Role", width: 140 },
+    {
+      field: "fileNo",
+      headerName: "File No",
+      width: 120,
+      filterOperators: containsOnlyOperator,
+    },
+    {
+      field: "name",
+      headerName: "Name",
+      flex: 1,
+      filterOperators: containsOnlyOperator,
+    },
+    {
+      field: "role",
+      headerName: "Role",
+      width: 140,
+      filterOperators: containsOnlyOperator,
+    },
     {
       field: "createdAt",
       headerName: "Created",
       flex: 1,
+      sortable: true,
+      filterable: false,
       valueFormatter: (params) => new Date(params).toLocaleString(),
+    },
+    {
+      field: "actions",
+      headerName: "",
+      width: 80,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <IconButton
+          onClick={() => setDeleteUser(params.row)}
+          color="error"
+          size="small"
+        >
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+      ),
     },
   ];
 
@@ -68,9 +168,10 @@ export default function UsersTable({ data }: { data: TableData }) {
         <Typography variant="h5" fontWeight="bold" mb={3}>
           👥 Users
         </Typography>
+
         <Button
           variant="contained"
-          onClick={() => setOpen(true)}
+          onClick={() => setOpenAdd(true)}
           sx={{ mb: 2 }}
         >
           ➕ Add User
@@ -79,19 +180,38 @@ export default function UsersTable({ data }: { data: TableData }) {
 
       {/* Table */}
       <DataGrid
+        filterDebounceMs={500}
         rows={users}
         columns={columns}
         getRowId={(row) => row.id}
-        pagination
         paginationMode="server"
+        sortingMode="server"
+        filterMode="server"
         rowCount={rowCount}
         paginationModel={{ page, pageSize }}
+        sortModel={sortModel}
+        filterModel={filterModel}
+        loading={loading}
         onPaginationModelChange={async (model) => {
           setPage(model.page);
           setPageSize(model.pageSize);
-          await updateData(model.page);
+          await updateData(model.page, sortModel, filterModel);
         }}
-        loading={loading}
+        onSortModelChange={async (model) => {
+          setSortModel(model);
+          await updateData(0, model, filterModel);
+          setPage(0);
+        }}
+        onFilterModelChange={async (model) => {
+          setFilterModel(model);
+
+          const hasValue = model.items.some((i) => !!i.value);
+
+          if (hasValue || filterModel.items.length > 0) {
+            await updateData(0, sortModel, model);
+            setPage(0);
+          }
+        }}
         disableRowSelectionOnClick
         sx={{
           border: "none",
@@ -101,22 +221,25 @@ export default function UsersTable({ data }: { data: TableData }) {
         }}
       />
 
-      {/* Add User Modal */}
+      {/* Add User */}
       <AddUserDialog
-        open={open}
-        onClose={() => setOpen(false)}
+        open={openAdd}
+        onClose={() => setOpenAdd(false)}
         onUserAdded={(newUser) => {
           if (page === 0) {
-            // 🟢 If we are on first page → prepend and remove last if needed
-            setUsers((prev) => {
-              const updated = [newUser, ...prev];
-              return updated.slice(0, pageSize);
-            });
+            setUsers((prev) => [newUser, ...prev].slice(0, pageSize));
           }
-
-          // Always increment total count
           setRowCount((prev) => prev + 1);
         }}
+      />
+
+      {/* Delete User */}
+      <DeleteUserDialog
+        open={!!deleteUser}
+        user={deleteUser}
+        loading={deleteLoading}
+        onClose={() => setDeleteUser(null)}
+        onConfirm={handleDelete}
       />
     </Box>
   );
