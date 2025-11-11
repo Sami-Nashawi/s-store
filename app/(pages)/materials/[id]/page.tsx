@@ -19,7 +19,9 @@ export default async function MaterialDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  // ✅ FIX: params must be awaited because you are in (pages) segment
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
 
   const material = await apiFetch(`materials/${id}`, {
     cache: "no-store",
@@ -46,7 +48,6 @@ export default async function MaterialDetailPage({
         mb={2}
       >
         <Box display="flex" alignItems="center" gap={2}>
-          {/* Back Button (filled style) */}
           <Link href="/materials">
             <Button
               variant="contained"
@@ -69,7 +70,6 @@ export default async function MaterialDetailPage({
           </Typography>
         </Box>
 
-        {/* Delete Button (client component) */}
         <DeleteMaterialDialog id={id} />
       </Box>
 
@@ -83,7 +83,7 @@ export default async function MaterialDetailPage({
             gap: 2,
           }}
         >
-          {/* Left side — image & info */}
+          {/* LEFT — Image + Info */}
           <Box display="flex" alignItems="center" gap={3} flex={1}>
             {material.photoUrl ? (
               <Image
@@ -91,7 +91,10 @@ export default async function MaterialDetailPage({
                 alt={material.description}
                 width={150}
                 height={150}
-                style={{ borderRadius: 8, objectFit: "cover" }}
+                style={{
+                  borderRadius: 8,
+                  objectFit: "cover",
+                }}
               />
             ) : (
               <Box
@@ -116,7 +119,7 @@ export default async function MaterialDetailPage({
             </Box>
           </Box>
 
-          {/* Right side — QR */}
+          {/* RIGHT — QR */}
           <Box
             sx={{
               width: 200,

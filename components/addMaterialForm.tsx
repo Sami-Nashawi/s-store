@@ -10,7 +10,7 @@ import {
   Button,
   Box,
   CircularProgress,
-  Alert,
+  Avatar,
 } from "@mui/material";
 import { apiClientFetch } from "@/lib/apiClientFetch";
 
@@ -23,10 +23,24 @@ export default function AddMaterialForm() {
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [unit, setUnit] = useState("pcs");
+
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
 
   const isFormValid = description.trim() !== "" && quantity > 0;
+
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] || null;
+    setPhotoFile(file);
+
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      setPhotoPreview(previewUrl);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,14 +49,19 @@ export default function AddMaterialForm() {
     setLoading(true);
     setData(null);
 
+    // ✅ Use FormData for file upload
+    const formData = new FormData();
+    formData.append("description", description);
+    formData.append("quantity", String(quantity));
+    formData.append("unit", unit);
+
+    if (photoFile) {
+      formData.append("photo", photoFile);
+    }
+
     const result = await apiClientFetch(`materials`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        description,
-        quantity: Number(quantity),
-        unit,
-      }),
+      body: formData,
     });
 
     if (result?.id) {
@@ -149,11 +168,62 @@ export default function AddMaterialForm() {
               <MenuItem value="litre">litre</MenuItem>
             </TextField>
 
+            {/* ✅ Photo Upload UNDER Unit */}
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+              }}
+            >
+              <Typography fontWeight="bold" color="text.secondary">
+                Material Photo (optional)
+              </Typography>
+
+              <Box
+                sx={{
+                  width: "180px",
+                  height: "180px",
+                  borderRadius: 2,
+                  border: "2px dashed #ccc",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  "&:hover": { borderColor: "primary.main" },
+                }}
+                onClick={() =>
+                  document.getElementById("material-photo-input")?.click()
+                }
+              >
+                {photoPreview ? (
+                  <Avatar
+                    src={photoPreview}
+                    variant="rounded"
+                    sx={{ width: "100%", height: "100%" }}
+                  />
+                ) : (
+                  <Typography color="text.secondary">
+                    Click to upload photo
+                  </Typography>
+                )}
+              </Box>
+
+              <input
+                id="material-photo-input"
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                style={{ display: "none" }}
+              />
+            </Box>
+
             {/* Save Button */}
             <Button
               type="submit"
               variant="contained"
-              color="primary"
               disabled={!isFormValid || loading}
               sx={{ height: "45px", px: 3 }}
               startIcon={
