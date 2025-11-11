@@ -4,19 +4,21 @@ import { getUser } from "@/lib/getUser";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const adminUser: any = await getUser(req);
   if (!adminUser) {
     return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
 
-  const userId = params.id;
+  // ✅ Important: params is a Promise in Next.js type definition
+  const { id } = await context.params;
+  const userId = Number(id);
 
   try {
-    // ✅ Check if user has related events
+    // ✅ Check if the user has linked events
     const hasEvents = await prisma.event.findFirst({
-      where: { userId: Number(userId) },
+      where: { userId },
       select: { id: true },
     });
 
@@ -32,10 +34,12 @@ export async function DELETE(
 
     // ✅ Safe delete
     await prisma.user.delete({
-      where: { id: Number(userId) },
+      where: { id: userId },
     });
 
-    return NextResponse.json({ message: "User deleted successfully." });
+    return NextResponse.json({
+      message: "User deleted successfully.",
+    });
   } catch (err: any) {
     return NextResponse.json(
       { error: err?.message ?? "Failed to delete user" },
