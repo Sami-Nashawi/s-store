@@ -11,9 +11,11 @@ import {
   Button,
 } from "@mui/material";
 import { User } from "@prisma/client";
+import ChangePasswordDialog from "./ChangePasswordDialog";
 
 export default function ProfileMenu({ user }: { user: User | null }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [openChangePassword, setOpenChangePassword] = useState(false);
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -30,10 +32,12 @@ export default function ProfileMenu({ user }: { user: User | null }) {
 
   return (
     <>
+      {/* Profile Avatar Button */}
       <IconButton onClick={handleOpen} sx={{ p: 0 }}>
         <Avatar alt={user.name}>{user.name?.charAt(0) ?? "U"}</Avatar>
       </IconButton>
 
+      {/* Profile Menu */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -50,7 +54,7 @@ export default function ProfileMenu({ user }: { user: User | null }) {
         }}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-        disableScrollLock={true}
+        disableScrollLock
       >
         {/* Profile Section */}
         <Box
@@ -75,17 +79,36 @@ export default function ProfileMenu({ user }: { user: User | null }) {
 
         <Divider sx={{ mb: 2 }} />
 
-        {/* Logout Button */}
-        <Button
-          onClick={handleLogout}
-          variant="contained"
-          color="error"
-          fullWidth
-          sx={{ borderRadius: 2, textTransform: "none", fontWeight: "bold" }}
-        >
-          Logout
-        </Button>
+        {/* Action Buttons */}
+        <Box display="flex" flexDirection="column" gap={1}>
+          {/* ✅ Close menu before opening dialog (fix focus issue) */}
+          <Button
+            onClick={() => {
+              handleClose();
+              setOpenChangePassword(true);
+            }}
+            variant="contained"
+          >
+            Change Password
+          </Button>
+
+          {/* Logout Button */}
+          <Button
+            onClick={handleLogout}
+            variant="contained"
+            color="error"
+            sx={{ borderRadius: 2, textTransform: "none", fontWeight: "bold" }}
+          >
+            Logout
+          </Button>
+        </Box>
       </Menu>
+
+      {/* 👇 Move dialog outside of Menu */}
+      <ChangePasswordDialog
+        open={openChangePassword}
+        onClose={() => setOpenChangePassword(false)}
+      />
     </>
   );
 }
