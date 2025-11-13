@@ -7,6 +7,8 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import InventoryIcon from "@mui/icons-material/Inventory";
@@ -19,8 +21,18 @@ import { User } from "@prisma/client";
 
 const drawerWidth = 240;
 
-export default function Sidebar({ user }: { user: User | null }) {
+export default function Sidebar({
+  user,
+  open,
+  onClose,
+}: {
+  user: User | null;
+  open: boolean;
+  onClose: () => void;
+}) {
   const pathname = usePathname();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const menuItems = [
     {
@@ -50,25 +62,13 @@ export default function Sidebar({ user }: { user: User | null }) {
     { text: "Users", icon: <PeopleIcon />, path: "/users", role: ["MANAGER"] },
   ];
 
-  // ✅ Helper function for route highlighting logic
   const isActive = (path: string): boolean => {
-    if (path === "/") return pathname === "/"; // dashboard exact
+    if (path === "/") return pathname === "/";
     return pathname === path || pathname.startsWith(`${path}/`);
   };
 
-  return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        [`& .MuiDrawer-paper`]: {
-          width: drawerWidth,
-          boxSizing: "border-box",
-          bgcolor: "grey.100",
-        },
-      }}
-    >
+  const drawerContent = (
+    <Box sx={{ width: drawerWidth }}>
       <Toolbar />
       <List>
         {menuItems.map(
@@ -79,6 +79,7 @@ export default function Sidebar({ user }: { user: User | null }) {
                 key={index}
                 component={Link}
                 href={item.path}
+                onClick={isMobile ? onClose : undefined} // ✅ close on mobile tap
                 sx={{
                   cursor: "pointer",
                   textDecoration: "none",
@@ -106,6 +107,38 @@ export default function Sidebar({ user }: { user: User | null }) {
             )
         )}
       </List>
+    </Box>
+  );
+
+  return isMobile ? (
+    <Drawer
+      anchor="left"
+      open={open}
+      onClose={onClose}
+      ModalProps={{
+        keepMounted: true, // improves performance
+      }}
+      sx={{
+        "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box" },
+      }}
+    >
+      {drawerContent}
+    </Drawer>
+  ) : (
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: drawerWidth,
+        flexShrink: 0,
+        [`& .MuiDrawer-paper`]: {
+          width: drawerWidth,
+          boxSizing: "border-box",
+          bgcolor: "grey.100",
+        },
+      }}
+      open
+    >
+      {drawerContent}
     </Drawer>
   );
 }

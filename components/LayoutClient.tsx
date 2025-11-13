@@ -1,7 +1,12 @@
 "use client";
-import { useEffect } from "react"; // ✅ correct import from react
-
-import { Box, CssBaseline, Toolbar } from "@mui/material";
+import { useEffect, useState } from "react";
+import {
+  Box,
+  CssBaseline,
+  Toolbar,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import { User } from "@prisma/client";
@@ -15,23 +20,39 @@ export default function LayoutClient({
   children: React.ReactNode;
   user: User | null;
 }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+
   useEffect(() => {
     setupFetchInterceptor();
   }, []);
 
+  // Auto-close sidebar on mobile
+  useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
+
   return (
     <SnackbarProvider>
-      <Box sx={{ display: "flex" }}>
+      <Box sx={{ display: "flex", flexDirection: "row", width: "100%" }}>
         <CssBaseline />
-        <Navbar user={user} />
-        <Sidebar user={user} />
+        <Navbar user={user} onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <Sidebar
+          user={user}
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+
         <Box
           component="main"
           sx={{
             flexGrow: 1,
             bgcolor: "grey.50",
-            p: 3,
+            p: isMobile ? 1.5 : 3,
             minHeight: "100vh",
+            width: "100%",
+            overflowX: "hidden",
           }}
         >
           <Toolbar />
@@ -41,6 +62,3 @@ export default function LayoutClient({
     </SnackbarProvider>
   );
 }
-// function setupFetchInterceptor() {
-//   // placeholder implementation — replace with real fetch interceptor logic as needed
-// }

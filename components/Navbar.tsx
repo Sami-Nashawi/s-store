@@ -1,10 +1,22 @@
-import { AppBar, Box, Toolbar, Typography } from "@mui/material";
+"use client";
+import { AppBar, Box, Toolbar, Typography, IconButton } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 import ProfileMenu from "./ProfileMenu";
 import { User } from "@prisma/client";
 import Image from "next/image";
 import logo from "@/public/logo-text.png";
+import { useTheme, useMediaQuery } from "@mui/material";
 
-export default function Navbar({ user }: { user: User | null }) {
+export default function Navbar({
+  user,
+  onMenuClick,
+}: {
+  user: User | null;
+  onMenuClick?: () => void;
+}) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <AppBar
       position="fixed"
@@ -13,18 +25,36 @@ export default function Navbar({ user }: { user: User | null }) {
         bgcolor: "primary.main",
       }}
     >
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        {/* Logo + App Name */}
+      <Toolbar
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        {/* Left side: menu icon (mobile) + logo */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {isMobile && (
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={onMenuClick}
+              sx={{ mr: 1 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+
           <Image
-            src={logo} // place logo in public/logo.png
+            src={logo}
             alt="S Store Logo"
             priority
-            width={140}
+            width={isMobile ? 110 : 140}
+            style={{ height: "auto" }}
           />
         </Box>
 
-        {/* Profile menu */}
+        {/* Right side: Profile menu */}
         <Box>
           <ProfileMenu user={user} />
         </Box>

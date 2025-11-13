@@ -1,6 +1,7 @@
+export const dynamic = "force-dynamic"; // ✅ prevent build-time prerender error
+
 import { apiFetch } from "@/lib/apiFetch";
 import { Box, Typography } from "@mui/material";
-
 import KPISection from "./components/KPISection";
 import LowStockSection from "./components/LowStockSection";
 import LatestMaterials from "./components/LatestMaterials";
@@ -8,15 +9,32 @@ import DonutChart from "./components/DonutChart";
 import BarChartSection from "./components/BarChartSection";
 
 export default async function DashboardPage() {
-  const data = await apiFetch("dashboard");
+  let data: any = null;
 
-  if (data.error) {
+  try {
+    data = await apiFetch("dashboard");
+  } catch (error) {
+    console.error("Dashboard fetch error:", error);
+  }
+
+  // ✅ Safely handle null or error responses
+  if (!data || data?.error) {
     return (
       <Box p={3}>
-        <Typography color="error">Failed to load dashboard.</Typography>
+        <Typography color="error" variant="h6">
+          ⚠️ Failed to load dashboard data. Please refresh the page or check
+          your connection.
+        </Typography>
       </Box>
     );
   }
+
+  const totalMaterials = data.totalMaterials ?? 0;
+  const lowStockItems = data.lowStockItems ?? [];
+  const recentEvents = data.recentEvents ?? 0;
+  const monthlyReceive = data.monthlyReceive ?? [];
+  const monthlyWithdraw = data.monthlyWithdraw ?? [];
+  const latestMaterials = data.latestMaterials ?? [];
 
   return (
     <Box
@@ -26,58 +44,65 @@ export default async function DashboardPage() {
         flexDirection: "column",
         gap: 2,
         justifyContent: "center",
+        p: { xs: 2, sm: 3, md: 4 }, // ✅ padding adjusts for small screens
       }}
     >
-      <Typography variant="h4" fontWeight="bold" mb={2}>
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        mb={2}
+        textAlign={{ xs: "center", sm: "left" }} // ✅ better on phones
+      >
         📊 S-Store Dashboard
       </Typography>
 
       {/* ✅ KPI Row */}
       <KPISection
-        totalMaterials={data.totalMaterials ?? 0}
-        lowStockCount={data.lowStockItems?.length ?? 0}
-        recentUpdates={data.recentEvents ?? 0}
+        totalMaterials={totalMaterials}
+        lowStockCount={lowStockItems.length}
+        recentUpdates={recentEvents}
       />
 
       {/* ✅ Charts Row */}
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: "repeat(5, 1fr)",
+          gridTemplateColumns: {
+            xs: "1fr", // ✅ stacked on phones
+            sm: "repeat(2, 1fr)", // two columns on tablets
+            md: "repeat(5, 1fr)", // full layout on desktop
+          },
           gap: 3,
           alignItems: "start",
         }}
       >
-        {/* ✅ Row 1 - Left: Stock Condition (1 column) */}
-        <Box sx={{ gridColumn: "span 1" }}>
-          <DonutChart
-            low={data.lowStockItems.length}
-            total={data.totalMaterials}
-          />
+        {/* Donut Chart */}
+        <Box sx={{ gridColumn: { xs: "span 1", md: "span 1" } }}>
+          <DonutChart low={lowStockItems.length} total={totalMaterials} />
         </Box>
 
-        {/* ✅ Row 1 - Right: Monthly Chart (4 columns) */}
-        <Box sx={{ gridColumn: "span 4" }}>
+        {/* Monthly Bar Chart */}
+        <Box sx={{ gridColumn: { xs: "span 1", sm: "span 1", md: "span 4" } }}>
           <BarChartSection
-            monthlyReceive={data.monthlyReceive}
-            monthlyWithdraw={data.monthlyWithdraw}
+            monthlyReceive={monthlyReceive}
+            monthlyWithdraw={monthlyWithdraw}
           />
         </Box>
 
-        {/* ✅ Row 2 - Latest Materials (2 columns) */}
-        <Box sx={{ gridColumn: "span 2", height: "100%" }}>
-          <LatestMaterials materials={data.latestMaterials} />
+        {/* Latest Materials */}
+        <Box
+          sx={{ gridColumn: { xs: "span 1", md: "span 2" }, height: "100%" }}
+        >
+          <LatestMaterials materials={latestMaterials} />
         </Box>
 
-        {/* ✅ Row 2 - Low Stock Materials (3 columns) */}
-        <Box sx={{ gridColumn: "span 3", height: "100%" }}>
-          <LowStockSection items={data.lowStockItems ?? []} />
+        {/* Low Stock */}
+        <Box
+          sx={{ gridColumn: { xs: "span 1", md: "span 3" }, height: "100%" }}
+        >
+          <LowStockSection items={lowStockItems} />
         </Box>
       </Box>
-
-      {/* ✅ Low Stock List */}
-
-      {/* ✅ Quick Buttons */}
     </Box>
   );
 }

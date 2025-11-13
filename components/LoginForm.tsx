@@ -8,6 +8,7 @@ import {
   FormControlLabel,
   Checkbox,
   CircularProgress,
+  Typography,
 } from "@mui/material";
 
 export default function LoginForm() {
@@ -31,7 +32,7 @@ export default function LoginForm() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Login failed");
+        throw new Error(data.error || "Invalid file number or password");
       }
 
       window.location.href = "/";
@@ -47,7 +48,12 @@ export default function LoginForm() {
       component="form"
       onSubmit={handleSubmit}
       noValidate
-      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 2.5,
+        textAlign: "left",
+      }}
     >
       <TextField
         label="File Number"
@@ -55,6 +61,7 @@ export default function LoginForm() {
         value={fileNo}
         onChange={(e) => setFileNo(e.target.value)}
         required
+        fullWidth
       />
 
       <TextField
@@ -63,6 +70,7 @@ export default function LoginForm() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
+        fullWidth
       />
 
       <FormControlLabel
@@ -75,14 +83,24 @@ export default function LoginForm() {
         label="Remember me"
       />
 
-      {error && <Box sx={{ color: "error.main", fontSize: 14 }}>{error}</Box>}
+      {error && (
+        <Typography color="error" fontSize={14} sx={{ mt: -1 }}>
+          {error}
+        </Typography>
+      )}
 
       <Button
         type="submit"
         variant="contained"
         color="primary"
         disabled={loading}
-        sx={{ alignSelf: "flex-end", px: 4 }}
+        fullWidth
+        sx={{
+          py: 1.3,
+          fontWeight: "bold",
+          borderRadius: 2,
+          mt: 1,
+        }}
       >
         {loading ? (
           <CircularProgress size={22} sx={{ color: "white" }} />

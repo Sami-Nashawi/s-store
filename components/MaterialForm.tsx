@@ -13,6 +13,9 @@ import {
   InputAdornment,
   IconButton,
   CircularProgress,
+  Card,
+  CardContent,
+  Divider,
 } from "@mui/material";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -91,27 +94,38 @@ export default function MaterialForm() {
           }}
         />
 
-        {/* ✅ Clean Material Description Preview */}
+        {/* ✅ Improved Material Description Card */}
         {materialDescription && (
-          <Box
+          <Card
+            elevation={1}
             sx={{
               width: "100%",
-              mt: -1,
-              px: 2,
-              py: 1,
               borderRadius: 2,
-              backgroundColor: "#f3f6fc",
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
               border: "1px solid #dce3f1",
+              backgroundColor: "#f9fbff",
             }}
           >
-            <InfoOutlinedIcon fontSize="small" sx={{ color: "#4A6FA5" }} />
-            <Typography sx={{ fontSize: 14, color: "#2a3b55" }}>
-              <strong>{materialDescription}</strong>
-            </Typography>
-          </Box>
+            <CardContent sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: "#2a3b55", fontWeight: 600 }}
+                >
+                  Material Description
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "#495670",
+                    mt: 0.3,
+                    wordWrap: "break-word",
+                  }}
+                >
+                  {materialDescription}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
         )}
 
         {/* Action */}

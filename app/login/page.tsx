@@ -5,7 +5,7 @@ import logo from "@/public/logo-text.png";
 
 export const metadata = {
   title: "Login",
-  description: "Login page for loging the user in the system",
+  description: "Login page for logging the user into the system",
 };
 
 export default function LoginPage() {
@@ -17,14 +17,15 @@ export default function LoginPage() {
         alignItems: "center",
         height: "100vh",
         bgcolor: "background.default",
-        px: 2,
+        px: { xs: 2, sm: 4 },
       }}
     >
       <Paper
         elevation={6}
         sx={{
-          p: 4,
-          width: 380,
+          p: { xs: 3, sm: 5 },
+          width: { xs: "100%", sm: 400, md: 420 },
+          maxWidth: "420px",
           textAlign: "center",
           borderRadius: 3,
         }}
@@ -32,7 +33,7 @@ export default function LoginPage() {
         {/* Logo + App Name */}
         <Box
           sx={{
-            mb: 4,
+            mb: { xs: 3, sm: 4 },
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -43,20 +44,31 @@ export default function LoginPage() {
             alt="S Store Logo"
             priority
             style={{
-              width: "220px",
+              width: "100%",
+              maxWidth: "220px",
               height: "auto",
             }}
           />
         </Box>
 
-        <Typography variant="h5" mb={3} fontWeight="bold">
+        <Typography
+          variant="h5"
+          mb={{ xs: 2, sm: 3 }}
+          fontWeight="bold"
+          sx={{ fontSize: { xs: "1.2rem", sm: "1.5rem" } }}
+        >
           🔑 Login
         </Typography>
 
-        {/* Client component */}
+        {/* Client form */}
         <LoginForm />
 
-        <Typography variant="body2" color="text.secondary" mt={3}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          mt={{ xs: 2, sm: 3 }}
+          sx={{ fontSize: { xs: "0.85rem", sm: "0.9rem" } }}
+        >
           Welcome back! Please login to continue.
         </Typography>
       </Paper>

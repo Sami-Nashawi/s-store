@@ -32,7 +32,7 @@ export default function MaterialQRSection({
       {/* ✅ Only show the QR code inside the card */}
       <div id="printableQR">
         <QRCodeCanvas
-          value={id}
+          value={`id=${id},description=${description}`}
           size={200} // crisp size on screen
           includeMargin={true}
           level="H" // higher error correction = sharper print

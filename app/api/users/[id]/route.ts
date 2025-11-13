@@ -17,20 +17,20 @@ export async function DELETE(
 
   try {
     // ✅ Check if the user has linked events
-    const hasEvents = await prisma.event.findFirst({
-      where: { userId },
-      select: { id: true },
-    });
+    // const hasEvents = await prisma.event.findFirst({
+    //   where: { userId },
+    //   select: { id: true },
+    // });
 
-    if (hasEvents) {
-      return NextResponse.json(
-        {
-          error:
-            "User cannot be deleted because he has material transactions in the system.",
-        },
-        { status: 400 }
-      );
-    }
+    // if (hasEvents) {
+    //   return NextResponse.json(
+    //     {
+    //       error:
+    //         "User cannot be deleted because he has material transactions in the system.",
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
 
     // ✅ Safe delete
     await prisma.user.delete({
