@@ -89,8 +89,8 @@ export default async function MaterialDetailPage({
               <Image
                 src={material.photoUrl}
                 alt={material.description}
-                width={150}
-                height={150}
+                width={250}
+                height={250}
                 style={{
                   borderRadius: 8,
                   objectFit: "cover",

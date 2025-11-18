@@ -26,38 +26,47 @@ export default function AddMaterialForm() {
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string>("");
 
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
 
   const isFormValid = description.trim() !== "" && quantity > 0;
 
+  // ✅ ONLY VALIDATE MAX SIZE (5MB)
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] || null;
-    setPhotoFile(file);
 
-    if (file) {
-      const previewUrl = URL.createObjectURL(file);
-      setPhotoPreview(previewUrl);
+    setPhotoError("");
+    setPhotoFile(null);
+    setPhotoPreview(null);
+
+    if (!file) return;
+
+    // ❌ Max size 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoError("Image must be 5MB or less.");
+      return;
     }
+
+    // ✅ Valid image
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!isFormValid || loading) return;
+    if (!isFormValid || loading || photoError) return;
 
     setLoading(true);
     setData(null);
 
-    // ✅ Use FormData for file upload
     const formData = new FormData();
     formData.append("description", description);
     formData.append("quantity", String(quantity));
     formData.append("unit", unit);
 
-    if (photoFile) {
-      formData.append("photo", photoFile);
-    }
+    if (photoFile) formData.append("photo", photoFile);
 
     const result = await apiClientFetch(`materials`, {
       method: "POST",
@@ -84,7 +93,7 @@ export default function AddMaterialForm() {
         ➕ Add Material
       </Typography>
 
-      {/* ✅ Print CSS */}
+      {/* PRINT CSS */}
       <style jsx global>{`
         @media print {
           body * {
@@ -131,32 +140,26 @@ export default function AddMaterialForm() {
               flexWrap: "wrap",
             }}
           >
-            {/* Description */}
             <TextField
               label="Material Description"
-              variant="outlined"
               fullWidth
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
             />
 
-            {/* Quantity */}
             <TextField
               label="Quantity"
               type="number"
-              variant="outlined"
               fullWidth
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
               required
             />
 
-            {/* Unit */}
             <TextField
               select
               label="Unit"
-              variant="outlined"
               fullWidth
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
@@ -168,7 +171,7 @@ export default function AddMaterialForm() {
               <MenuItem value="litre">litre</MenuItem>
             </TextField>
 
-            {/* ✅ Photo Upload UNDER Unit */}
+            {/* IMAGE UPLOAD + ERROR ------------------------------------------------ */}
             <Box
               sx={{
                 width: "100%",
@@ -186,7 +189,7 @@ export default function AddMaterialForm() {
                   width: "180px",
                   height: "180px",
                   borderRadius: 2,
-                  border: "2px dashed #ccc",
+                  border: photoError ? "2px solid red" : "2px dashed #ccc",
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
@@ -218,13 +221,19 @@ export default function AddMaterialForm() {
                 onChange={handlePhotoChange}
                 style={{ display: "none" }}
               />
+
+              {/* 🔻 ERROR TEXT */}
+              {photoError && (
+                <Typography sx={{ color: "red", fontSize: 13 }}>
+                  {photoError}
+                </Typography>
+              )}
             </Box>
 
-            {/* Save Button */}
             <Button
               type="submit"
               variant="contained"
-              disabled={!isFormValid || loading}
+              disabled={!isFormValid || loading || !!photoError}
               sx={{ height: "45px", px: 3 }}
               startIcon={
                 loading ? <CircularProgress size={20} color="inherit" /> : null
@@ -236,7 +245,7 @@ export default function AddMaterialForm() {
         </CardContent>
       </Card>
 
-      {/* ✅ Show QR After Saving */}
+      {/* QR AFTER SAVE */}
       {data && (
         <Box textAlign="center" mt={4}>
           <div id="printableQR">

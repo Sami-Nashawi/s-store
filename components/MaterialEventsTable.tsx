@@ -46,19 +46,35 @@ export default function MaterialEventsTable({
     }
   }
   const columns: GridColDef[] = [
-    { field: "type", headerName: "Event Type", flex: 1 },
-    { field: "quantity", headerName: "Quantity", flex: 1 },
+    {
+      field: "type",
+      headerName: "Event Type",
+      flex: 1,
+      filterable: false,
+      sortable: false,
+    },
+    {
+      field: "quantity",
+      headerName: "Quantity",
+      flex: 1,
+      filterable: false,
+      sortable: false,
+    },
     {
       field: "user",
       headerName: "User",
       flex: 1,
       valueGetter: (params: any) => params?.name || "-",
+      filterable: false,
+      sortable: false,
     },
     {
       field: "createdAt",
       headerName: "Date",
       flex: 1,
       valueGetter: (params: any) => new Date(params).toLocaleString(),
+      filterable: false,
+      sortable: false,
     },
   ];
 

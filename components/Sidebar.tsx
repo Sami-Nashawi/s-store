@@ -68,7 +68,7 @@ export default function Sidebar({
   };
 
   const drawerContent = (
-    <Box sx={{ width: drawerWidth }}>
+    <Box sx={{ width: drawerWidth, overflowX: "hidden" }}>
       <Toolbar />
       <List>
         {menuItems.map(
@@ -79,7 +79,7 @@ export default function Sidebar({
                 key={index}
                 component={Link}
                 href={item.path}
-                onClick={isMobile ? onClose : undefined} // ✅ close on mobile tap
+                onClick={isMobile ? onClose : undefined}
                 sx={{
                   cursor: "pointer",
                   textDecoration: "none",
@@ -116,10 +116,14 @@ export default function Sidebar({
       open={open}
       onClose={onClose}
       ModalProps={{
-        keepMounted: true, // improves performance
+        keepMounted: true,
       }}
       sx={{
-        "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box" },
+        "& .MuiDrawer-paper": {
+          width: drawerWidth,
+          boxSizing: "border-box",
+          overflowX: "hidden", // ✅ Fix scroll on mobile
+        },
       }}
     >
       {drawerContent}
@@ -134,6 +138,7 @@ export default function Sidebar({
           width: drawerWidth,
           boxSizing: "border-box",
           bgcolor: "grey.100",
+          overflowX: "hidden", // ✅ Fix scroll on desktop
         },
       }}
       open
