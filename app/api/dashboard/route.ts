@@ -1,19 +1,31 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/getUser";
+import { ROLE_PERMISSIONS } from "@/shared/roles-permissions";
 
 const LOW_STOCK_THRESHOLD = 50;
 
 export async function GET(req: Request) {
   const user: any = await getUser(req);
+
+  // ❌ No user logged in
   if (!user) {
     return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
+
+  // ❌ User exists but does not have dashboard permissions
+  const canAccess = ROLE_PERMISSIONS[user.role.name]?.includes("dashboard");
+  if (!canAccess) {
+    return NextResponse.json(
+      { error: "You do not have permission to view the dashboard" },
+      { status: 403 }
+    );
+  }
   try {
-    // ✅ 1. Total materials (always a number)
+    // ✅ 1. Total materials
     const totalMaterials = (await prisma.material.count()) ?? 0;
 
-    // ✅ 2. Low stock items (always array)
+    // ✅ 2. Low stock items
     const lowStockItems =
       (await prisma.material.findMany({
         where: { quantity: { lt: LOW_STOCK_THRESHOLD } },
@@ -21,14 +33,14 @@ export async function GET(req: Request) {
         take: 10,
       })) ?? [];
 
-    // ✅ 3. Latest materials (always array)
+    // ✅ 3. Latest materials
     const latestMaterials =
       (await prisma.material.findMany({
         orderBy: { createdAt: "desc" },
         take: 8,
       })) ?? [];
 
-    // ✅ 4. Monthly chart (always returns 12 slots)
+    // ✅ 4. Monthly chart
     const now = new Date();
     const currentYear = now.getFullYear();
     const yearStart = new Date(currentYear, 0, 1);
@@ -48,7 +60,7 @@ export async function GET(req: Request) {
     const monthlyWithdraw = Array(12).fill(0);
 
     events.forEach((e) => {
-      if (!e || !e.createdAt) return; // ✅ protection
+      if (!e || !e.createdAt) return;
       const monthIndex = new Date(e.createdAt).getMonth();
       const qty = e.quantity ?? 0;
 
@@ -56,14 +68,14 @@ export async function GET(req: Request) {
       if (e.type === "WITHDRAW") monthlyWithdraw[monthIndex] += qty;
     });
 
-    // ✅ 5. Recent updates (always a number)
+    // ✅ 5. Recent events (for summary card)
     const monthStart = new Date(currentYear, now.getMonth(), 1);
     const recentEvents =
       (await prisma.event.count({
         where: { createdAt: { gte: monthStart } },
       })) ?? 0;
 
-    // ✅ Always return fully safe structured data
+    // 🔥 Return fully safe structured dashboard response
     return NextResponse.json({
       totalMaterials,
       lowStockItems,

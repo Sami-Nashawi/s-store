@@ -11,6 +11,7 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.findUnique({
       where: { fileNo: Number(fileNo) },
+      include: { role: true }, // ⬅️ FETCH THE ROLE NAME
     });
 
     if (!user) {
@@ -32,9 +33,10 @@ export async function POST(req: Request) {
     const expiresIn = rememberMe ? "7d" : "1h";
     const token = jwt.sign(
       {
+        ...user,
+        password: null,
         userId: user.id,
         fileNo: user.fileNo,
-        role: user.role,
         name: user.name,
       },
       JWT_SECRET,
@@ -44,7 +46,13 @@ export async function POST(req: Request) {
     // Send token in HttpOnly cookie
     const res = NextResponse.json({
       message: "Login successful",
-      user: { id: user.id, name: user.name, role: user.role },
+      user: {
+        ...user,
+        password: null,
+        userId: user.id,
+        fileNo: user.fileNo,
+        name: user.name,
+      },
     });
     res.cookies.set("token", token, {
       httpOnly: true,

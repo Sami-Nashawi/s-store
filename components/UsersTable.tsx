@@ -19,7 +19,7 @@ type User = {
   id: string;
   fileNo: number;
   name: string;
-  role: "MANAGER" | "WORKER";
+  role: { id: number; name: string };
   createdAt: string;
 };
 
@@ -128,6 +128,7 @@ export default function UsersTable({ data }: { data: TableData }) {
       headerName: "Role",
       width: 140,
       filterOperators: containsOnlyOperator,
+      valueFormatter: (params: { id: number; name: string }) => params.name,
     },
     {
       field: "createdAt",

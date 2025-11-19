@@ -8,6 +8,7 @@ export async function getUser(req: Request) {
     if (!token) return null;
     const user = await prisma?.user.findUnique({
       where: { id: Number(token?.userId) },
+      include: { role: true }, // ⬅️ FETCH THE ROLE NAME
     });
     return user;
   } catch (error) {

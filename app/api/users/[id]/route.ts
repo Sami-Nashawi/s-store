@@ -2,12 +2,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/getUser";
 
+function isManager(user: any) {
+  return user?.role["name"] === "MANAGER";
+}
+
 export async function DELETE(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   const adminUser: any = await getUser(req);
-  if (!adminUser) {
+  if (!adminUser || !isManager(adminUser)) {
     return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
 

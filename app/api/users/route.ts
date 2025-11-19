@@ -1,20 +1,26 @@
-// app/api/users/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import { getUser } from "@/lib/getUser";
 
-// ✅ Schema for creating a user
+// Updated Role Schema
 const CreateUserSchema = z.object({
   fileNo: z.number().min(1),
   name: z.string().min(1),
-  role: z.enum(["MANAGER", "WORKER"]).optional(),
+  role: z.enum(["MANAGER", "STORE_KEEPER", "ENGINEER", "FOREMAN"]).optional(),
 });
 
+// Only MANAGER can access user list or create users
+function isManager(user: any) {
+  return user?.role["name"] === "MANAGER";
+}
+// =======================================
+//               GET USERS
+// =======================================
 export async function GET(req: Request) {
   const currentUser: any = await getUser(req);
-  if (!currentUser) {
+  if (!currentUser || !isManager(currentUser)) {
     return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
 
@@ -34,32 +40,31 @@ export async function GET(req: Request) {
     const where: any = {};
 
     const numericFields = ["fileNo"];
+    const roleEnumValues = ["MANAGER", "STORE_KEEPER", "ENGINEER", "FOREMAN"];
 
     for (const [key, value] of Object.entries(filters)) {
       if (!value) continue;
+
       const val = String(value).trim();
 
-      // ✅ Numeric fields
+      // Numeric filters
       if (numericFields.includes(key)) {
         const numValue = parseInt(val);
         if (!isNaN(numValue)) where[key] = { equals: numValue };
         continue;
       }
 
-      // ✅ Special ENUM handling for "role"
+      // Role filter
       if (key === "role") {
-        const roles = ["MANAGER", "WORKER"];
-        const matchedRoles = roles.filter((r) =>
+        const matchedRoles = roleEnumValues.filter((r) =>
           r.toLowerCase().includes(val.toLowerCase())
         );
 
-        if (matchedRoles.length > 0) {
-          where.role = { in: matchedRoles };
-        }
+        if (matchedRoles.length > 0) where.role = { in: matchedRoles };
         continue;
       }
 
-      // ✅ Regular string "contains" filter for name
+      // Normal string filter (name)
       where[key] = { contains: val, mode: "insensitive" };
     }
 
@@ -91,10 +96,14 @@ export async function GET(req: Request) {
   }
 }
 
-// ✅ POST — Create User
+// =======================================
+//             CREATE USER (POST)
+// =======================================
 export async function POST(req: Request) {
   const currentUser: any = await getUser(req);
-  if (!currentUser) {
+
+  // Only MANAGER can create users
+  if (!currentUser || !isManager(currentUser)) {
     return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
 
@@ -102,7 +111,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const parsed = CreateUserSchema.parse(body);
 
-    // ✅ Check if fileNo already exists
+    // Check duplicate file number
     const existing = await prisma.user.findUnique({
       where: { fileNo: parsed.fileNo },
     });
@@ -122,17 +131,18 @@ export async function POST(req: Request) {
         fileNo: parsed.fileNo,
         name: parsed.name,
         password: hashedPassword,
-        role: parsed.role ?? "WORKER",
+        role: { connect: { id: Number(parsed.role) ?? 1 } }, // Default lowest role (connect by unique role field)
       },
     });
 
     return NextResponse.json({
+      ...newUser,
+      password: null,
       id: newUser.id,
       fileNo: newUser.fileNo,
       name: newUser.name,
-      role: newUser.role,
       createdAt: newUser.createdAt,
-      message: `New user "${newUser.name}" was added successfully!`,
+      message: `New user "${newUser.name}" created successfully!`,
     });
   } catch (err: any) {
     return NextResponse.json(

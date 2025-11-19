@@ -2,18 +2,34 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { getUser } from "@/lib/getUser";
+import { ROLE_PERMISSIONS } from "@/shared/roles-permissions";
 
 export async function POST(req: Request) {
   const user: any = await getUser(req);
+
+  // 🔐 User not logged in
   if (!user) {
     return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
+  }
+
+  // 🔐 Permission check → needs "updateMaterial"
+  const canUpdate =
+    ROLE_PERMISSIONS[user.role.name]?.includes("updateMaterial");
+
+  if (!canUpdate) {
+    return NextResponse.json(
+      { error: "You do not have permission to update materials" },
+      { status: 403 }
+    );
   }
 
   const body = await req.json();
   const { materialId, type, quantity, note } = body;
 
   try {
-    // ✅ Validate materialId & quantity
+    // ------------------------------------------
+    // 🔍 VALIDATION
+    // ------------------------------------------
     if (!materialId || isNaN(Number(materialId))) {
       return NextResponse.json(
         { error: "Invalid material ID. Please select a valid material." },
@@ -35,7 +51,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Check if material exists
+    // ------------------------------------------
+    // 🔍 MATERIAL EXISTS?
+    // ------------------------------------------
     const material = await prisma.material.findUnique({
       where: { id: Number(materialId) },
     });
@@ -47,7 +65,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Prevent negative stock
+    // ------------------------------------------
+    // ❌ Prevent withdrawing more than stock
+    // ------------------------------------------
     if (type === "WITHDRAW" && material.quantity < quantity) {
       return NextResponse.json(
         {
@@ -57,19 +77,23 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Create event
+    // ------------------------------------------
+    // ✅ CREATE EVENT
+    // ------------------------------------------
     const event = await prisma.event.create({
       data: {
         type,
         quantity,
         note,
-        userId: user.id,
+        userId: Number(user.id),
         materialId: Number(materialId),
       },
       include: { user: true, material: true },
     });
 
-    // ✅ Update material quantity
+    // ------------------------------------------
+    // 🔄 UPDATE MATERIAL QUANTITY
+    // ------------------------------------------
     await prisma.material.update({
       where: { id: Number(materialId) },
       data: {

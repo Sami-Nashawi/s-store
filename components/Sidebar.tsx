@@ -18,15 +18,18 @@ import UpdateIcon from "@mui/icons-material/Update";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { User } from "@prisma/client";
+import { ROLE_PERMISSIONS } from "@/shared/roles-permissions";
 
 const drawerWidth = 240;
+
+// 🚀 NEW Role-based permissions table
 
 export default function Sidebar({
   user,
   open,
   onClose,
 }: {
-  user: User | null;
+  user: any;
   open: boolean;
   onClose: () => void;
 }) {
@@ -36,30 +39,35 @@ export default function Sidebar({
 
   const menuItems = [
     {
+      id: "dashboard",
       text: "Dashboard",
       icon: <DashboardIcon />,
       path: "/",
-      role: ["MANAGER"],
     },
     {
+      id: "materials",
       text: "Materials",
       icon: <InventoryIcon />,
       path: "/materials",
-      role: ["MANAGER"],
     },
     {
+      id: "addMaterial",
       text: "Add Material",
       icon: <AddIcon />,
       path: "/add-material",
-      role: ["MANAGER"],
     },
     {
+      id: "updateMaterial",
       text: "Update Material",
       icon: <UpdateIcon />,
       path: "/update-material",
-      role: ["WORKER", "MANAGER"],
     },
-    { text: "Users", icon: <PeopleIcon />, path: "/users", role: ["MANAGER"] },
+    {
+      id: "users",
+      text: "Users",
+      icon: <PeopleIcon />,
+      path: "/users",
+    },
   ];
 
   const isActive = (path: string): boolean => {
@@ -71,41 +79,42 @@ export default function Sidebar({
     <Box sx={{ width: drawerWidth, overflowX: "hidden" }}>
       <Toolbar />
       <List>
-        {menuItems.map(
-          (item, index) =>
-            user &&
-            item.role.includes(user.role) && (
-              <ListItem
-                key={index}
-                component={Link}
-                href={item.path}
-                onClick={isMobile ? onClose : undefined}
+        {menuItems.map((item) => {
+          if (!user) return null;
+
+          const allowed = ROLE_PERMISSIONS[user.role.name]?.includes(item.id);
+          if (!allowed) return null;
+
+          return (
+            <ListItem
+              key={item.id}
+              component={Link}
+              href={item.path}
+              onClick={isMobile ? onClose : undefined}
+              sx={{
+                cursor: "pointer",
+                backgroundColor: isActive(item.path) ? "#1876D2" : "",
+                color: isActive(item.path) ? "#fff" : "#202020",
+                paddingLeft: "28px",
+                transition: "all .3s ease",
+                "&:hover": {
+                  backgroundColor: isActive(item.path)
+                    ? "#1565C0"
+                    : "rgba(0,0,0,0.04)",
+                },
+              }}
+            >
+              <ListItemIcon
                 sx={{
-                  cursor: "pointer",
-                  textDecoration: "none",
-                  backgroundColor: isActive(item.path) ? "#1876D2" : "",
                   color: isActive(item.path) ? "#fff" : "#202020",
-                  transition: "all .3s ease",
-                  paddingLeft: "28px",
-                  "&:hover": {
-                    backgroundColor: isActive(item.path)
-                      ? "#1565C0"
-                      : "rgba(0, 0, 0, 0.04)",
-                  },
                 }}
               >
-                <ListItemIcon
-                  sx={{
-                    color: isActive(item.path) ? "#fff" : "#202020",
-                    transition: "all .3s ease",
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItem>
-            )
-        )}
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItem>
+          );
+        })}
       </List>
     </Box>
   );
@@ -115,14 +124,12 @@ export default function Sidebar({
       anchor="left"
       open={open}
       onClose={onClose}
-      ModalProps={{
-        keepMounted: true,
-      }}
+      ModalProps={{ keepMounted: true }}
       sx={{
         "& .MuiDrawer-paper": {
           width: drawerWidth,
           boxSizing: "border-box",
-          overflowX: "hidden", // ✅ Fix scroll on mobile
+          overflowX: "hidden",
         },
       }}
     >
@@ -134,11 +141,10 @@ export default function Sidebar({
       sx={{
         width: drawerWidth,
         flexShrink: 0,
-        [`& .MuiDrawer-paper`]: {
+        "& .MuiDrawer-paper": {
           width: drawerWidth,
-          boxSizing: "border-box",
           bgcolor: "grey.100",
-          overflowX: "hidden", // ✅ Fix scroll on desktop
+          overflowX: "hidden",
         },
       }}
       open
