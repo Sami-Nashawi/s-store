@@ -227,6 +227,7 @@ export default function UsersTable({ data }: { data: TableData }) {
         open={openAdd}
         onClose={() => setOpenAdd(false)}
         onUserAdded={(newUser) => {
+          console.log("New user added:", newUser);
           if (page === 0) {
             setUsers((prev) => [newUser, ...prev].slice(0, pageSize));
           }

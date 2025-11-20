@@ -10,6 +10,7 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/material";
+import { apiClientFetch } from "@/lib/apiClientFetch";
 
 export default function LoginForm() {
   const [fileNo, setFileNo] = useState("");
@@ -24,18 +25,24 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const data = await apiClientFetch("auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fileNo, password, rememberMe }),
       });
-
-      if (!res.ok) {
-        const data = await res.json();
+      console.log("Login response data:", data);
+      if (!data?.user?.id) {
         throw new Error(data.error || "Invalid file number or password");
       }
 
-      window.location.href = "/";
+      // role comes from the backend token payload OR response
+      const role = data.user.role?.name || data.user.role; // support both formats
+
+      if (role === "FOREMAN") {
+        window.location.href = "/update-material";
+      } else {
+        window.location.href = "/";
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {

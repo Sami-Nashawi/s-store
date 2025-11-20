@@ -12,6 +12,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { apiClientFetch } from "@/lib/apiClientFetch";
+import { ROLE_OPTIONS } from "@/shared/roles-permissions";
 
 type Props = {
   open: boolean;
@@ -20,7 +21,11 @@ type Props = {
 };
 
 export default function AddUserDialog({ open, onClose, onUserAdded }: Props) {
-  const [form, setForm] = useState({ fileNo: "", name: "", role: "WORKER" });
+  const [form, setForm] = useState({
+    fileNo: "",
+    name: "",
+    role: 2,
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -46,7 +51,7 @@ export default function AddUserDialog({ open, onClose, onUserAdded }: Props) {
         return;
       }
 
-      onUserAdded(data); // pass full response
+      onUserAdded(data);
       handleClose();
     } catch (err) {
       console.error("❌ Error adding user:", err);
@@ -58,7 +63,7 @@ export default function AddUserDialog({ open, onClose, onUserAdded }: Props) {
 
   function handleClose() {
     onClose();
-    setForm({ fileNo: "", name: "", role: "WORKER" });
+    setForm({ fileNo: "", name: "", role: 2 });
     setError("");
     setLoading(false);
   }
@@ -66,6 +71,7 @@ export default function AddUserDialog({ open, onClose, onUserAdded }: Props) {
   return (
     <Dialog open={open} onClose={handleClose} fullWidth>
       <DialogTitle>➕ Add User</DialogTitle>
+
       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <TextField
           label="File No"
@@ -78,6 +84,7 @@ export default function AddUserDialog({ open, onClose, onUserAdded }: Props) {
           fullWidth
           sx={{ mt: 1 }}
         />
+
         <TextField
           label="Name"
           required
@@ -85,21 +92,27 @@ export default function AddUserDialog({ open, onClose, onUserAdded }: Props) {
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           fullWidth
         />
+
         <TextField
           select
           label="Role"
           value={form.role}
-          onChange={(e) => setForm({ ...form, role: e.target.value })}
+          onChange={(e) => setForm({ ...form, role: Number(e.target.value) })}
           fullWidth
         >
-          <MenuItem value="WORKER">Worker</MenuItem>
-          <MenuItem value="MANAGER">Manager</MenuItem>
+          {ROLE_OPTIONS.map((role) => (
+            <MenuItem key={role.value} value={role.value}>
+              {role.label}
+            </MenuItem>
+          ))}
         </TextField>
       </DialogContent>
+
       <DialogActions sx={{ padding: "0 25px 25px 0" }}>
         <Button onClick={handleClose} disabled={loading}>
           Cancel
         </Button>
+
         <Button
           onClick={handleAddUser}
           variant="contained"

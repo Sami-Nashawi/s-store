@@ -1,9 +1,13 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
+// prisma/seed.js
+
+const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcrypt");
 
 const prisma = new PrismaClient();
 
 async function main() {
+  console.log("🌱 Seeding started...");
+
   // --------------------------------------------
   // 1️⃣ Create Permissions
   // --------------------------------------------
@@ -16,15 +20,16 @@ async function main() {
     "MODIFY_USERS",
   ];
 
-  const permissionRecords = await Promise.all(
-    permissions.map((p) =>
-      prisma.permission.upsert({
-        where: { name: p },
-        update: {},
-        create: { name: p },
-      })
-    )
-  );
+  const permissionRecords = [];
+
+  for (const name of permissions) {
+    const p = await prisma.permission.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    });
+    permissionRecords.push(p);
+  }
 
   function getPermId(name) {
     return permissionRecords.find((p) => p.name === name)?.id;
@@ -32,13 +37,16 @@ async function main() {
 
   // --------------------------------------------
   // 2️⃣ Create Roles With Their Permissions
+  // (IDs will be 1 = MANAGER, 2 = ENGINEER, 3 = STORE_KEEPER, 4 = FOREMAN)
   // --------------------------------------------
   const roles = [
     {
+      id: 4, // force ID for FOREMAN
       name: "FOREMAN",
       perms: ["VIEW_DASHBOARD", "VIEW_MATERIALS", "UPDATE_MATERIAL"],
     },
     {
+      id: 3, // STORE_KEEPER
       name: "STORE_KEEPER",
       perms: [
         "VIEW_DASHBOARD",
@@ -48,10 +56,12 @@ async function main() {
       ],
     },
     {
+      id: 2, // ENGINEER
       name: "ENGINEER",
       perms: ["VIEW_DASHBOARD", "VIEW_MATERIALS", "UPDATE_MATERIAL"],
     },
     {
+      id: 1, // MANAGER
       name: "MANAGER",
       perms: permissions, // all permissions
     },
@@ -61,31 +71,29 @@ async function main() {
 
   for (const role of roles) {
     const roleRec = await prisma.role.upsert({
-      where: { name: role.name },
+      where: { id: role.id },
       update: {},
-      create: { name: role.name },
+      create: { id: role.id, name: role.name },
     });
 
     roleRecords[role.name] = roleRec.id;
 
     // link permissions
-    await Promise.all(
-      role.perms.map((perm) =>
-        prisma.rolePermission.upsert({
-          where: {
-            roleId_permissionId: {
-              roleId: roleRec.id,
-              permissionId: getPermId(perm),
-            },
-          },
-          update: {},
-          create: {
+    for (const perm of role.perms) {
+      await prisma.rolePermission.upsert({
+        where: {
+          roleId_permissionId: {
             roleId: roleRec.id,
             permissionId: getPermId(perm),
           },
-        })
-      )
-    );
+        },
+        update: {},
+        create: {
+          roleId: roleRec.id,
+          permissionId: getPermId(perm),
+        },
+      });
+    }
   }
 
   console.log("✅ Roles & Permissions seeded");
@@ -103,22 +111,22 @@ async function main() {
         fileNo: 1,
         name: "Sami Nashawi",
         password: hashedPassword,
-        roleId: roleRecords["MANAGER"], // Assign manager role!
+        roleId: roleRecords["MANAGER"], // ID = 1
       },
     });
 
-    console.log(
-      "✅ Main Manager user created with fileNo 1 and password 'admin1234'"
-    );
+    console.log("✅ Main Manager user created (fileNo: 1, pass: admin1234)");
   } else {
-    console.log("ℹ️ Users already exist, skipping manager creation.");
+    console.log("ℹ️ Users already exist → skipping manager creation");
   }
+
+  console.log("🌱 Seeding complete!");
 }
 
 main()
   .then(() => prisma.$disconnect())
   .catch((e) => {
-    console.error(e);
+    console.error("❌ Seed error:", e);
     prisma.$disconnect();
     process.exit(1);
   });

@@ -4,3 +4,10 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
   ENGINEER: ["dashboard", "materials", "updateMaterial"],
   FOREMAN: ["updateMaterial"],
 };
+
+export const ROLE_OPTIONS = [
+  { value: 1, label: "Manager" },
+  { value: 2, label: "Engineer" },
+  { value: 3, label: "Store Keeper" },
+  { value: 4, label: "Foreman" },
+];

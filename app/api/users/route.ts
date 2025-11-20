@@ -8,7 +8,10 @@ import { getUser } from "@/lib/getUser";
 const CreateUserSchema = z.object({
   fileNo: z.number().min(1),
   name: z.string().min(1),
-  role: z.enum(["MANAGER", "STORE_KEEPER", "ENGINEER", "FOREMAN"]).optional(),
+  role: z
+    .union([z.string(), z.number()])
+    .transform((v) => Number(v))
+    .refine((v) => !isNaN(v) && v > 0, "Invalid role ID"),
 });
 
 // Only MANAGER can access user list or create users
@@ -88,7 +91,6 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ rows, total });
   } catch (err: any) {
-    console.error("❌ Error fetching users:", err);
     return NextResponse.json(
       { error: err?.message ?? "Failed to fetch users" },
       { status: 500 }
@@ -133,8 +135,9 @@ export async function POST(req: Request) {
         password: hashedPassword,
         role: { connect: { id: Number(parsed.role) ?? 1 } }, // Default lowest role (connect by unique role field)
       },
+      include: { role: true },
     });
-
+    console.log(newUser);
     return NextResponse.json({
       ...newUser,
       password: null,
@@ -145,6 +148,7 @@ export async function POST(req: Request) {
       message: `New user "${newUser.name}" created successfully!`,
     });
   } catch (err: any) {
+    console.error("❌ Error creating user:", err);
     return NextResponse.json(
       { error: err?.message ?? "Invalid request" },
       { status: 400 }
