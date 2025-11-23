@@ -13,7 +13,7 @@ import {
 import { User } from "@prisma/client";
 import ChangePasswordDialog from "./ChangePasswordDialog";
 
-export default function ProfileMenu({ user }: { user: User | null }) {
+export default function ProfileMenu({ user }: { user: any }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openChangePassword, setOpenChangePassword] = useState(false);
 
@@ -73,7 +73,7 @@ export default function ProfileMenu({ user }: { user: User | null }) {
             File No: {user.fileNo}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {user.role}
+            {user?.role.name}
           </Typography>
         </Box>
 

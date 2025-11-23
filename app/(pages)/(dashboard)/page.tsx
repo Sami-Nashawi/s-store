@@ -45,7 +45,6 @@ export default async function DashboardPage() {
         flexDirection: "column",
         gap: 2,
         justifyContent: "center",
-        p: { xs: 2, sm: 3, md: 4 }, // ✅ padding adjusts for small screens
       }}
     >
       <Typography
