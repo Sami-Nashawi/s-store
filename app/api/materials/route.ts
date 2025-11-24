@@ -95,6 +95,7 @@ export async function POST(req: Request) {
     const quantity = Number(formData.get("quantity"));
     const unit = formData.get("unit") as string;
     const photoFile = formData.get("photo") as File | null;
+    const notes = formData.get("notes") as string | null;
 
     if (!description || !quantity || !unit) {
       return NextResponse.json(
@@ -132,12 +133,12 @@ export async function POST(req: Request) {
         quantity,
         unit,
         photoUrl,
+        notes,
         events: {
           create: {
             type: "RECEIVE",
             quantity,
             userId: Number(user.id),
-            note: "Initial stock",
           },
         },
       },

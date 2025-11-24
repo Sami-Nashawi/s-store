@@ -98,8 +98,8 @@ export default async function MaterialDetailPage({
               />
             ) : (
               <Box
-                width={150}
-                height={150}
+                minWidth={250}
+                minHeight={250}
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
@@ -116,6 +116,11 @@ export default async function MaterialDetailPage({
               <Typography color="text.secondary">
                 Quantity: {material.quantity} {material.unit}
               </Typography>
+              {material.notes && (
+                <Typography sx={{ mt: 1, fontStyle: "italic", color: "gray" }}>
+                  Notes: {material.notes}
+                </Typography>
+              )}
             </Box>
           </Box>
 

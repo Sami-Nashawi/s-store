@@ -84,7 +84,6 @@ export async function POST(req: Request) {
       data: {
         type,
         quantity,
-        note,
         userId: Number(user.id),
         materialId: Number(materialId),
       },

@@ -23,6 +23,7 @@ export default function AddMaterialForm() {
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [unit, setUnit] = useState("pcs");
+  const [notes, setNotes] = useState("");
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -65,6 +66,7 @@ export default function AddMaterialForm() {
     formData.append("description", description);
     formData.append("quantity", String(quantity));
     formData.append("unit", unit);
+    formData.append("notes", notes);
 
     if (photoFile) formData.append("photo", photoFile);
 
@@ -170,6 +172,14 @@ export default function AddMaterialForm() {
               <MenuItem value="ton">ton</MenuItem>
               <MenuItem value="litre">litre</MenuItem>
             </TextField>
+            <TextField
+              label="Notes (optional)"
+              fullWidth
+              multiline
+              minRows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
 
             {/* IMAGE UPLOAD + ERROR ------------------------------------------------ */}
             <Box
