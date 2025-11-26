@@ -13,10 +13,7 @@ export default async function DashboardPage() {
 
   try {
     data = await apiFetch("dashboard");
-    console.log("Dashboard data fetched:", data);
-  } catch (error) {
-    console.error("Dashboard fetch error:", error);
-  }
+  } catch (error) {}
 
   // ✅ Safely handle null or error responses
   if (!data || data?.error) {

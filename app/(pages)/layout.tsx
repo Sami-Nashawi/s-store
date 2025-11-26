@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { User } from "@prisma/client";
 import MuiThemeRegistry from "@/providers/MuiThemeRegistry";
+import { apiFetch } from "@/lib/apiFetch";
+import { redirect } from "next/navigation";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
@@ -18,9 +20,13 @@ export default async function Layout({
   if (token) {
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as User;
-      user = decoded;
+      const data = await apiFetch("users/me");
+      if (data.error) {
+        redirect("/login");
+      }
+      user = { ...decoded, ...data.user };
     } catch {
-      user = null;
+      redirect("/login");
     }
   }
   return (
