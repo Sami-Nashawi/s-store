@@ -12,66 +12,87 @@ export default function LoginPage() {
   return (
     <Box
       sx={{
+        minHeight: "100vh",
         display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
+        flexDirection: "column",
         bgcolor: "background.default",
-        px: { xs: 2, sm: 4 },
       }}
     >
-      <Paper
-        elevation={6}
+      {/* Main Content */}
+      <Box
         sx={{
-          p: { xs: 3, sm: 5 },
-          width: { xs: "100%", sm: 400, md: 420 },
-          maxWidth: "420px",
-          textAlign: "center",
-          borderRadius: 3,
+          flex: 1,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          px: { xs: 2, sm: 4 },
         }}
       >
-        {/* Logo + App Name */}
-        <Box
+        <Paper
+          elevation={6}
           sx={{
-            mb: { xs: 3, sm: 4 },
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            p: { xs: 3, sm: 5 },
+            width: { xs: "100%", sm: 400, md: 420 },
+            maxWidth: "420px",
+            textAlign: "center",
+            borderRadius: 3,
           }}
         >
-          <Image
-            src={logo}
-            alt="S Store Logo"
-            priority
-            style={{
-              width: "100%",
-              maxWidth: "220px",
-              height: "auto",
+          {/* Logo + App Name */}
+          <Box
+            sx={{
+              mb: { xs: 3, sm: 4 },
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
             }}
-          />
-        </Box>
+          >
+            <Image
+              src={logo}
+              alt="S Store Logo"
+              priority
+              style={{
+                width: "100%",
+                maxWidth: "220px",
+                height: "auto",
+              }}
+            />
+          </Box>
 
-        <Typography
-          variant="h5"
-          mb={{ xs: 2, sm: 3 }}
-          fontWeight="bold"
-          sx={{ fontSize: { xs: "1.2rem", sm: "1.5rem" } }}
-        >
-          🔑 Login
-        </Typography>
+          <Typography
+            variant="h5"
+            mb={{ xs: 2, sm: 3 }}
+            fontWeight="bold"
+            sx={{ fontSize: { xs: "1.2rem", sm: "1.5rem" } }}
+          >
+            🔑 Login
+          </Typography>
 
-        {/* Client form */}
-        <LoginForm />
+          {/* Client form */}
+          <LoginForm />
 
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          mt={{ xs: 2, sm: 3 }}
-          sx={{ fontSize: { xs: "0.85rem", sm: "0.9rem" } }}
-        >
-          Welcome back! Please login to continue.
-        </Typography>
-      </Paper>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            mt={{ xs: 2, sm: 3 }}
+            sx={{ fontSize: { xs: "0.85rem", sm: "0.9rem" } }}
+          >
+            Welcome back! Please login to continue.
+          </Typography>
+        </Paper>
+      </Box>
+
+      {/* Footer (No scroll, no overflow) */}
+      <Box
+        sx={{
+          textAlign: "center",
+          py: 2,
+          opacity: 0.7,
+          fontSize: "0.9rem",
+        }}
+      >
+        © 2025 S Store – All Rights Reserved.
+      </Box>
     </Box>
   );
 }

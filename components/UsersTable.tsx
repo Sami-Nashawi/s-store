@@ -14,6 +14,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddUserDialog from "./AddUserDialog";
 import DeleteUserDialog from "./DeleteUserDialog";
 import { apiClientFetch } from "@/lib/apiClientFetch";
+import { ROLE_OPTIONS } from "@/shared/roles-permissions";
 
 type User = {
   id: string;
@@ -128,7 +129,8 @@ export default function UsersTable({ data }: { data: TableData }) {
       headerName: "Role",
       width: 140,
       filterOperators: containsOnlyOperator,
-      valueFormatter: (params: { id: number; name: string }) => params.name,
+      valueFormatter: (params: { id: number; name: string }) =>
+        ROLE_OPTIONS[params.id - 1].label || params.name,
     },
     {
       field: "createdAt",

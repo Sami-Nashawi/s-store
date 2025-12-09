@@ -11,17 +11,25 @@ import {
   Box,
   CircularProgress,
   Avatar,
+  Tooltip,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import { apiClientFetch } from "@/lib/apiClientFetch";
 
 export const metadata = {
-  title: "Add Material",
-  description: "A simple MUI + Next.js layout",
+  title: "Add New Material",
+  description: "Add materials with QR code and optional stock alerts",
 };
 
 export default function AddMaterialForm() {
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState(0);
+
+  // Checkbox toggles visibility
+  const [enableMinStock, setEnableMinStock] = useState(false);
+  const [minStock, setMinStock] = useState<number | "">("");
+
   const [unit, setUnit] = useState("pcs");
   const [notes, setNotes] = useState("");
 
@@ -34,23 +42,19 @@ export default function AddMaterialForm() {
 
   const isFormValid = description.trim() !== "" && quantity > 0;
 
-  // ✅ ONLY VALIDATE MAX SIZE (5MB)
+  // Handle Photo Upload
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] || null;
-
     setPhotoError("");
     setPhotoFile(null);
     setPhotoPreview(null);
-
     if (!file) return;
 
-    // ❌ Max size 5MB
     if (file.size > 5 * 1024 * 1024) {
       setPhotoError("Image must be 5MB or less.");
       return;
     }
 
-    // ✅ Valid image
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
   }
@@ -67,6 +71,11 @@ export default function AddMaterialForm() {
     formData.append("quantity", String(quantity));
     formData.append("unit", unit);
     formData.append("notes", notes);
+
+    // Include only when enabled
+    if (enableMinStock && minStock !== "") {
+      formData.append("minStock", String(minStock));
+    }
 
     if (photoFile) formData.append("photo", photoFile);
 
@@ -92,7 +101,7 @@ export default function AddMaterialForm() {
   return (
     <Box>
       <Typography variant="h5" fontWeight="bold" mb={3}>
-        ➕ Add Material
+        ➕ Add New Material
       </Typography>
 
       {/* PRINT CSS */}
@@ -142,6 +151,7 @@ export default function AddMaterialForm() {
               flexWrap: "wrap",
             }}
           >
+            {/* Description */}
             <TextField
               label="Material Description"
               fullWidth
@@ -149,16 +159,61 @@ export default function AddMaterialForm() {
               onChange={(e) => setDescription(e.target.value)}
               required
             />
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                width: "100%",
+                justifyContent: "space-between",
+              }}
+            >
+              {/* Quantity */}
+              <TextField
+                label="Quantity"
+                type="number"
+                fullWidth
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                required
+              />
 
-            <TextField
-              label="Quantity"
-              type="number"
-              fullWidth
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              required
-            />
-
+              {/* Checkbox next to quantity */}
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={enableMinStock}
+                    onChange={(e) => {
+                      setEnableMinStock(e.target.checked);
+                      if (!e.target.checked) setMinStock(""); // reset when disabled
+                    }}
+                  />
+                }
+                label="Stock Alert"
+                sx={{ width: 140 }} // vertically align with quantity
+              />
+            </Box>
+            {/* Minimum Stock input under Quantity, only if enabled */}
+            {enableMinStock && (
+              <Tooltip
+                title="When quantity reaches this value or lower, material will appear in Low Stock"
+                arrow
+              >
+                <TextField
+                  label="Minimum Stock Alert"
+                  type="number"
+                  fullWidth
+                  value={minStock}
+                  onChange={(e) =>
+                    setMinStock(
+                      e.target.value === "" ? "" : Number(e.target.value)
+                    )
+                  }
+                  inputProps={{ min: 0 }}
+                  sx={{ mt: 1 }}
+                />
+              </Tooltip>
+            )}
+            {/* Unit */}
             <TextField
               select
               label="Unit"
@@ -172,6 +227,7 @@ export default function AddMaterialForm() {
               <MenuItem value="ton">ton</MenuItem>
               <MenuItem value="litre">litre</MenuItem>
             </TextField>
+            {/* Notes */}
             <TextField
               label="Notes (optional)"
               fullWidth
@@ -180,14 +236,14 @@ export default function AddMaterialForm() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
-
-            {/* IMAGE UPLOAD + ERROR ------------------------------------------------ */}
+            {/* Image Upload ------------------------------------------------ */}
             <Box
               sx={{
                 width: "100%",
                 display: "flex",
                 flexDirection: "column",
                 gap: 1,
+                mt: 1,
               }}
             >
               <Typography fontWeight="bold" color="text.secondary">
@@ -232,24 +288,23 @@ export default function AddMaterialForm() {
                 style={{ display: "none" }}
               />
 
-              {/* 🔻 ERROR TEXT */}
               {photoError && (
                 <Typography sx={{ color: "red", fontSize: 13 }}>
                   {photoError}
                 </Typography>
               )}
             </Box>
-
+            {/* Submit Button */}
             <Button
               type="submit"
               variant="contained"
               disabled={!isFormValid || loading || !!photoError}
-              sx={{ height: "45px", px: 3 }}
+              sx={{ height: "45px", px: 3, mt: 2 }}
               startIcon={
                 loading ? <CircularProgress size={20} color="inherit" /> : null
               }
             >
-              {loading ? "Saving..." : "Save"}
+              {loading ? "Saving..." : "Save Material"}
             </Button>
           </Box>
         </CardContent>
