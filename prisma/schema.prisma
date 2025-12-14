@@ -46,6 +46,7 @@ model Material {
   description String
   photoUrl    String?
   quantity    Int       @default(0)
+  minStock    Int?      // 👈 Stock alert (NULL = disabled)
   lastUpdate  DateTime  @updatedAt
   unit        String
   createdAt   DateTime  @default(now())

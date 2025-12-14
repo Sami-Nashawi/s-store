@@ -3,17 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/getUser";
 import { ROLE_PERMISSIONS } from "@/shared/roles-permissions";
 
-const LOW_STOCK_THRESHOLD = 50;
-
 export async function GET(req: Request) {
   const user: any = await getUser(req);
 
-  // ❌ No user logged in
   if (!user) {
     return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
 
-  // ❌ User exists but does not have dashboard permissions
   const canAccess = ROLE_PERMISSIONS[user.role.name]?.includes("dashboard");
   if (!canAccess) {
     return NextResponse.json(
@@ -21,61 +17,56 @@ export async function GET(req: Request) {
       { status: 403 }
     );
   }
+
   try {
     // ✅ 1. Total materials
-    const totalMaterials = (await prisma.material.count()) ?? 0;
+    const totalMaterials = await prisma.material.count();
 
-    // ✅ 2. Low stock items
-    const lowStockItems =
-      (await prisma.material.findMany({
-        where: { quantity: { lt: LOW_STOCK_THRESHOLD } },
-        orderBy: { quantity: "asc" },
-        take: 10,
-      })) ?? [];
+    // ✅ 2. Low stock items (minStock based)
+    const lowStockItems = await prisma.$queryRaw<any[]>`
+      SELECT *
+      FROM "Material"
+      WHERE "minStock" IS NOT NULL
+      AND "quantity" <= "minStock"
+      ORDER BY "quantity" ASC
+      LIMIT 10
+    `;
 
     // ✅ 3. Latest materials
-    const latestMaterials =
-      (await prisma.material.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 8,
-      })) ?? [];
+    const latestMaterials = await prisma.material.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 8,
+    });
 
     // ✅ 4. Monthly chart
     const now = new Date();
     const currentYear = now.getFullYear();
     const yearStart = new Date(currentYear, 0, 1);
-    yearStart.setHours(0, 0, 0, 0);
 
-    const events =
-      (await prisma.event.findMany({
-        where: { createdAt: { gte: yearStart } },
-        select: {
-          type: true,
-          quantity: true,
-          createdAt: true,
-        },
-      })) ?? [];
+    const events = await prisma.event.findMany({
+      where: { createdAt: { gte: yearStart } },
+      select: {
+        type: true,
+        quantity: true,
+        createdAt: true,
+      },
+    });
 
     const monthlyReceive = Array(12).fill(0);
     const monthlyWithdraw = Array(12).fill(0);
 
     events.forEach((e) => {
-      if (!e || !e.createdAt) return;
-      const monthIndex = new Date(e.createdAt).getMonth();
-      const qty = e.quantity ?? 0;
-
-      if (e.type === "RECEIVE") monthlyReceive[monthIndex] += qty;
-      if (e.type === "WITHDRAW") monthlyWithdraw[monthIndex] += qty;
+      const month = new Date(e.createdAt).getMonth();
+      if (e.type === "RECEIVE") monthlyReceive[month] += e.quantity;
+      if (e.type === "WITHDRAW") monthlyWithdraw[month] += e.quantity;
     });
 
-    // ✅ 5. Recent events (for summary card)
+    // ✅ 5. Recent events
     const monthStart = new Date(currentYear, now.getMonth(), 1);
-    const recentEvents =
-      (await prisma.event.count({
-        where: { createdAt: { gte: monthStart } },
-      })) ?? 0;
-
-    // 🔥 Return fully safe structured dashboard response
+    const recentEvents = await prisma.event.count({
+      where: { createdAt: { gte: monthStart } },
+    });
+    console.log("low stock items", lowStockItems);
     return NextResponse.json({
       totalMaterials,
       lowStockItems,

@@ -5,7 +5,7 @@ import cloudinary from "@/lib/cloudinary";
 import { ROLE_PERMISSIONS } from "@/shared/roles-permissions";
 
 // ========================================
-// 🔹 GET — Fetch Materials (Requires "materials" permission)
+// 🔹 GET — Fetch Materials
 // ========================================
 export async function GET(req: Request) {
   const user: any = await getUser(req);
@@ -14,7 +14,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
 
-  // 🔐 Permission check
   const canAccess = ROLE_PERMISSIONS[user.role.name]?.includes("materials");
   if (!canAccess) {
     return NextResponse.json(
@@ -35,11 +34,10 @@ export async function GET(req: Request) {
 
   const where: any = {};
 
-  // filters builder
   for (const [key, value] of Object.entries(filters)) {
     if (!value) continue;
 
-    const numericFields = ["quantity", "unitPrice", "id"];
+    const numericFields = ["quantity", "id", "minStock"];
 
     if (numericFields.includes(key)) {
       const numberValue = parseFloat(value as string);
@@ -70,7 +68,7 @@ export async function GET(req: Request) {
 }
 
 // ========================================
-// 🔹 POST — Add Material (Requires "addMaterial" permission)
+// 🔹 POST — Add Material
 // ========================================
 export async function POST(req: Request) {
   const user: any = await getUser(req);
@@ -79,7 +77,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
   }
 
-  // 🔐 Permission check
   const canCreate = ROLE_PERMISSIONS[user.role.name]?.includes("addMaterial");
   if (!canCreate) {
     return NextResponse.json(
@@ -94,10 +91,15 @@ export async function POST(req: Request) {
     const description = formData.get("description") as string;
     const quantity = Number(formData.get("quantity"));
     const unit = formData.get("unit") as string;
-    const photoFile = formData.get("photo") as File | null;
     const notes = formData.get("notes") as string | null;
+    const photoFile = formData.get("photo") as File | null;
 
-    if (!description || !quantity || !unit) {
+    // 👇 NEW
+    const minStockRaw = formData.get("minStock");
+    const minStock =
+      minStockRaw !== null && minStockRaw !== "" ? Number(minStockRaw) : null;
+
+    if (!description || quantity <= 0 || !unit) {
       return NextResponse.json(
         { error: "Please fill all required fields." },
         { status: 400 }
@@ -106,7 +108,6 @@ export async function POST(req: Request) {
 
     let photoUrl: string | null = null;
 
-    // 🔹 Upload photo to Cloudinary (optional)
     if (photoFile) {
       const bytes = await photoFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
@@ -119,21 +120,20 @@ export async function POST(req: Request) {
             else resolve(result);
           }
         );
-
         stream.end(buffer);
       });
 
       photoUrl = uploadResult.secure_url;
     }
 
-    // 🔹 Save Material
     const material = await prisma.material.create({
       data: {
         description,
         quantity,
         unit,
-        photoUrl,
         notes,
+        photoUrl,
+        minStock, // ✅ saved here
         events: {
           create: {
             type: "RECEIVE",
@@ -153,6 +153,48 @@ export async function POST(req: Request) {
     console.error("❌ Error creating material:", err);
     return NextResponse.json(
       { error: err?.message || "Failed to create material" },
+      { status: 500 }
+    );
+  }
+}
+
+// ========================================
+// 🔹 PATCH — Ignore stock alert (set minStock = null)
+// ========================================
+export async function PATCH(req: Request) {
+  const user: any = await getUser(req);
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized Action" }, { status: 401 });
+  }
+
+  const canEdit = ROLE_PERMISSIONS[user.role.name]?.includes("addMaterial");
+  if (!canEdit) {
+    return NextResponse.json(
+      { error: "You do not have permission to update materials" },
+      { status: 403 }
+    );
+  }
+
+  try {
+    const { materialId } = await req.json();
+
+    if (!materialId) {
+      return NextResponse.json(
+        { error: "Material ID is required" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.material.update({
+      where: { id: Number(materialId) },
+      data: { minStock: null },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Failed to ignore stock alert" },
       { status: 500 }
     );
   }
