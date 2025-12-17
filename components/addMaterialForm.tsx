@@ -304,7 +304,7 @@ export default function AddMaterialForm() {
                 loading ? <CircularProgress size={20} color="inherit" /> : null
               }
             >
-              {loading ? "Saving..." : "Save Material"}
+              {loading ? "Saving..." : "Save"}
             </Button>
           </Box>
         </CardContent>

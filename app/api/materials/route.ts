@@ -191,7 +191,13 @@ export async function PATCH(req: Request) {
       data: { minStock: null },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Stock alert muted successfully",
+      },
+      { status: 200 }
+    );
   } catch (err) {
     return NextResponse.json(
       { error: "Failed to ignore stock alert" },
